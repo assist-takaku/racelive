@@ -1,0 +1,32 @@
+[project]
+name = "racelive"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "assist-takaku",email = "takaku@assist-net.jp"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy (>=2.2.6,<3.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "pyperclip (>=1.9.0,<2.0.0)",
+    "streamlit (>=1.45.1,<2.0.0)",
+    "plotly (>=6.1.2,<7.0.0)",
+    "ambient @ git+https://github.com/AmbientDataInc/ambient-python-lib.git",
+    "schedule (>=1.2.2,<2.0.0)",
+    "selenium (>=4.33.0,<5.0.0)",
+    "flet (>=0.28.3,<0.29.0)",
+    "sounddevice (>=0.5.2,<0.6.0)",
+    "soundfile (>=0.13.1,<0.14.0)",
+    "streamlit-autorefresh (>=1.0.1,<2.0.0)",
+    "st-pages (>=1.0.1,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "racelive", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
