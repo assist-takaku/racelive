@@ -459,7 +459,7 @@ with col_d1:
             with col_d1_s1:
                 st.write("Driver")
             with col_d1_s2:
-                selected_driver3 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver3", label_visibility="collapsed")
+                selected_driver3 = st.selectbox("ドライバー選択", driver_list, index=13, key="selected_driver3", label_visibility="collapsed")
             with col_d1_s3:
                 st.write("")
 
@@ -479,7 +479,7 @@ with col_d2:
             with col_d2_s1:
                 st.write("Driver")
             with col_d2_s2:
-                selected_driver4 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver4", label_visibility="collapsed")
+                selected_driver4 = st.selectbox("ドライバー選択", driver_list, index=14, key="selected_driver4", label_visibility="collapsed")
             with col_d2_s3:
                 st.write("")
 
