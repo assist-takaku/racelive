@@ -36,7 +36,7 @@ class Racelivescraper:
         self.driver = webdriver.Chrome(options=options)
         # chromeを開く
         self.driver.get(self.url)
-        self.driver.execute_script("document.body.style.zoom='75%'")  # 80%表示
+        self.driver.execute_script("document.body.style.zoom='65%'")  # 80%表示
 
 
     # ---------------------- ライブタイム・データの取得 ------------------------------------------------------------------
