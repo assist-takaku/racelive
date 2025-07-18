@@ -693,20 +693,33 @@ if livego_practice:
                     sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
                 else:
                     sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
-                best_sec_values = {col: practice_df[col].min() for col in sec_cols}
-                best_speed_value = practice_df["Speed"].max() if "Speed" in practice_df.columns else None
+                
+                # NaNでない値が存在するかチェック
+                best_sec_values = {}
+                for col in sec_cols:
+                    if col in practice_df.columns and not practice_df[col].isna().all():
+                        best_sec_values[col] = practice_df[col].min()
+                    else:
+                        best_sec_values[col] = None
+                
+                best_speed_value = None
+                if "Speed" in practice_df.columns and not practice_df["Speed"].isna().all():
+                    best_speed_value = practice_df["Speed"].max()
 
                 # 2行目のベース（LapTime最小行のコピー）
                 theoretical_row = practice_df.loc[[min_laptime_idx]].copy()
                 # 各Sec列を最小値、Speedを最大値に置換
                 for col in sec_cols:
-                    theoretical_row[col] = best_sec_values[col]
-                if "Speed" in practice_df.columns and best_speed_value is not None:
+                    if best_sec_values[col] is not None:
+                        theoretical_row[col] = best_sec_values[col]
+                if best_speed_value is not None:
                     theoretical_row["Speed"] = best_speed_value
                 # LapTime列はSec合計値をセット（理論値なので）
                 if "LapTime" in theoretical_row.columns:
-                    sec_sum = sum([best_sec_values[col] for col in sec_cols])
-                    theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
+                    valid_secs = [v for v in best_sec_values.values() if v is not None]
+                    if valid_secs:
+                        sec_sum = sum(valid_secs)
+                        theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
                 # Driver Name列に"Theoretical Time"をセット
                 if "Driver Name" in theoretical_row.columns:
                     theoretical_row["Driver Name"] = "Theoretical Time"
@@ -1096,155 +1109,29 @@ if livego_practice:
             # CarNoごとにLapTimeベスト
             if "CarNo" in practice_df.columns and "LapTime" in practice_df.columns:
                 filtered_df3 = practice_df.copy()
-                idx3 = filtered_df3.groupby("CarNo")["LapTime"].idxmin()
-                idx3 = idx3.dropna()  # NaNを除外
-                sectorsummary_df0 = filtered_df3.loc[idx3].copy()
-                # LapTimeの昇順で順位をつけてPos列を再設定
-                sectorsummary_df0 = sectorsummary_df0.sort_values("LapTime", ascending=True)
-                sectorsummary_df0["Pos"] = range(1, len(sectorsummary_df0) + 1)
-                sectorsummary_df0 = (
-                    sectorsummary_df0
-                    .reindex(columns=["Pos", "CarNo", "Driver Name", "LapTime"])
-                    .head(max_pos)
-                    .fillna("")
-                )
-                # LapTime列をmm:ss.000形式に変換
-                if "LapTime" in sectorsummary_df0.columns:
-                    sectorsummary_df0["LapTime"] = pd.to_numeric(sectorsummary_df0["LapTime"], errors="coerce").apply(seconds_to_laptime)
+                # LapTimeがNaNでない行だけを対象にする
+                filtered_df3 = filtered_df3[filtered_df3["LapTime"].notna()]
+                if not filtered_df3.empty:
+                    idx3 = filtered_df3.groupby("CarNo")["LapTime"].idxmin()
+                    idx3 = idx3.dropna()  # NaNを除外
+                    if not idx3.empty:
+                        sectorsummary_df0 = filtered_df3.loc[idx3].copy()
+                        # LapTimeの昇順で順位をつけてPos列を再設定
+                        sectorsummary_df0 = sectorsummary_df0.sort_values("LapTime", ascending=True)
+                        sectorsummary_df0["Pos"] = range(1, len(sectorsummary_df0) + 1)
+                        sectorsummary_df0 = (
+                            sectorsummary_df0
+                            .reindex(columns=["Pos", "CarNo", "Driver Name", "LapTime"])
+                            .head(max_pos)
+                            .fillna("")
+                        )
+                        # LapTime列をmm:ss.000形式に変換
+                        if "LapTime" in sectorsummary_df0.columns:
+                            sectorsummary_df0["LapTime"] = pd.to_numeric(sectorsummary_df0["LapTime"], errors="coerce").apply(seconds_to_laptime)
+                    else:
+                        sectorsummary_df0 = pd.DataFrame(columns=["Pos", "CarNo", "Driver Name", "LapTime"]).head(max_pos).fillna("")
+                else:
+                    sectorsummary_df0 = pd.DataFrame(columns=["Pos", "CarNo", "Driver Name", "LapTime"]).head(max_pos).fillna("")
             else:
-                sectorsummary_df0 = practice_df.reindex(columns=["Pos", "CarNo", "Driver Name", "LapTime"]).head(max_pos).fillna("")
-
-            # CarNoごとにSec 1ベスト
-            if "CarNo" in practice_df.columns and "Sec 1" in practice_df.columns:
-                filtered_df4 = practice_df.copy()
-                # Sec 1がNaNでない行だけを対象にする
-                filtered_df4 = filtered_df4[filtered_df4["Sec 1"].notna()]
-                idx4 = filtered_df4.groupby("CarNo")["Sec 1"].idxmin()
-                idx4 = idx4.dropna()  # NaNを除外
-                sectorsummary_df1 = filtered_df4.loc[idx4].copy()
-                # Sec 1の昇順で順位をつけてPos列を再設定
-                sectorsummary_df1 = sectorsummary_df1.sort_values("Sec 1", ascending=True)
-                sectorsummary_df1["Pos"] = range(1, len(sectorsummary_df1) + 1)
-                sectorsummary_df1 = (
-                    sectorsummary_df1
-                    .reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 1"])
-                    .head(max_pos)
-                    .fillna("")
-                )
-            else:
-                sectorsummary_df1 = practice_df.reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 1"]).head(max_pos).fillna("")
-
-            # CarNoごとにSec 2ベスト
-            if "CarNo" in practice_df.columns and "Sec 2" in practice_df.columns:
-                filtered_df5 = practice_df.copy()
-                # Sec 2がNaNでない行だけを対象にする
-                filtered_df5 = filtered_df5[filtered_df5["Sec 2"].notna()]
-                idx5 = filtered_df5.groupby("CarNo")["Sec 2"].idxmin()
-                idx5 = idx5.dropna()  # NaNを除外
-                sectorsummary_df2 = filtered_df5.loc[idx5].copy()
-                # Sec 2の昇順で順位をつけてPos列を再設定
-                sectorsummary_df2 = sectorsummary_df2.sort_values("Sec 2", ascending=True)
-                sectorsummary_df2["Pos"] = range(1, len(sectorsummary_df2) + 1)
-                sectorsummary_df2 = (
-                    sectorsummary_df2
-                    .reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 2"])
-                    .head(max_pos)
-                    .fillna("")
-                )
-            else:
-                sectorsummary_df2 = practice_df.reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 2"]).head(max_pos).fillna("")
-
-            # CarNoごとにSec 3ベスト
-            if "CarNo" in practice_df.columns and "Sec 3" in practice_df.columns:
-                filtered_df6 = practice_df.copy()
-                # Sec 3がNaNでない行だけを対象にする
-                filtered_df6 = filtered_df6[filtered_df6["Sec 3"].notna()]
-                idx6 = filtered_df6.groupby("CarNo")["Sec 3"].idxmin()
-                idx6 = idx6.dropna()  # NaNを除外
-                sectorsummary_df3 = filtered_df6.loc[idx6].copy()
-                # Sec 3の昇順で順位をつけてPos列を再設定
-                sectorsummary_df3 = sectorsummary_df3.sort_values("Sec 3", ascending=True)
-                sectorsummary_df3["Pos"] = range(1, len(sectorsummary_df3) + 1)
-                sectorsummary_df3 = (
-                    sectorsummary_df3
-                    .reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 3"])
-                    .head(max_pos)
-                    .fillna("")
-                )
-            else:
-                sectorsummary_df3 = practice_df.reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 3"]).head(max_pos).fillna("")
-
-            # CarNoごとにSec 4ベスト
-            if "CarNo" in practice_df.columns and "Sec 4" in practice_df.columns:
-                filtered_df7 = practice_df.copy()
-                # Sec 4がNaNでない行だけを対象にする
-                filtered_df7 = filtered_df7[filtered_df7["Sec 4"].notna()]
-                idx7 = filtered_df7.groupby("CarNo")["Sec 4"].idxmin()
-                idx7 = idx7.dropna()  # NaNを除外
-                sectorsummary_df4 = filtered_df7.loc[idx7].copy()
-                # Sec 4の昇順で順位をつけてPos列を再設定
-                sectorsummary_df4 = sectorsummary_df4.sort_values("Sec 4", ascending=True)
-                sectorsummary_df4["Pos"] = range(1, len(sectorsummary_df4) + 1)
-                sectorsummary_df4 = (
-                    sectorsummary_df4
-                    .reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 4"])
-                    .head(max_pos)
-                    .fillna("")
-                )
-            else:
-                sectorsummary_df4 = practice_df.reindex(columns=["Pos", "CarNo", "Driver Name", "Sec 4"]).head(max_pos).fillna("")
-
-            # CarNoごとにSpeedベスト
-            if "CarNo" in practice_df.columns and "Speed" in practice_df.columns:
-                filtered_df8 = practice_df.copy()
-                # SpeedがNaNでない行だけを対象にする
-                filtered_df8 = filtered_df8[filtered_df8["Speed"].notna()]
-                idx8 = filtered_df8.groupby("CarNo")["Speed"].idxmax()
-                idx8 = idx8.dropna()  # NaNを除外
-                sectorsummary_df5 = filtered_df8.loc[idx8].copy()
-                # Speedの昇順で順位をつけてPos列を再設定
-                sectorsummary_df5 = sectorsummary_df5.sort_values("Speed", ascending=False)
-                sectorsummary_df5["Pos"] = range(1, len(sectorsummary_df5) + 1)
-                sectorsummary_df5 = (
-                    sectorsummary_df5
-                    .reindex(columns=["Pos", "CarNo", "Driver Name", "Speed"])
-                    .head(max_pos)
-                    .fillna("")
-                )
-            else:
-                sectorsummary_df5 = practice_df.reindex(columns=["Pos", "CarNo", "Driver Name", "Speed"]).head(max_pos).fillna("")
-
-
-            # メーカー別タイム・サマリー
-            st.session_state.display_time_df1 = timesummary1
-            st.session_state.display_time_df2 = timesummary2
-
-            # ベスト・タイム・サマリー
-            st.session_state.display_timebest_df1 = besttime_summary1
-
-            # 選択ドライバー vs トータルタイム・サマリー
-            st.session_state.display_vs_driver_df1 = total_vs_driver_summary1
-            st.session_state.display_vs_driver_df2 = total_vs_driver_summary2
-
-            # ドライバー別タイム・データ
-            st.session_state.driver_display_df1_1 = drivertime_df1_1
-            st.session_state.driver_display_df1_2 = drivertime_df1_2
-            st.session_state.driver_display_df2_1 = drivertime_df2_1
-            st.session_state.driver_display_df2_2 = drivertime_df2_2
-            st.session_state.driver_display_df3_1 = drivertime_df3_1
-            st.session_state.driver_display_df3_2 = drivertime_df3_2
-            st.session_state.driver_display_df4_1 = drivertime_df4_1
-            st.session_state.driver_display_df4_2 = drivertime_df4_2
-
-            # セクター別タイム・サマリー
-            st.session_state.sector_display_df0 = sectorsummary_df0
-            st.session_state.sector_display_df1 = sectorsummary_df1
-            st.session_state.sector_display_df2 = sectorsummary_df2
-            st.session_state.sector_display_df3 = sectorsummary_df3
-            st.session_state.sector_display_df4 = sectorsummary_df4
-            st.session_state.sector_display_df5 = sectorsummary_df5
-
-            st.session_state.csv_mtime = mtime
-    else:
-        st.warning("CSVファイルが見つかりません。")
+                sectorsummary_df0 = pd.DataFrame(columns=["Pos", "CarNo", "Driver Name", "LapTime"]).head(max_pos).fillna("")
 
