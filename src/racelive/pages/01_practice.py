@@ -459,7 +459,7 @@ with col_d1:
             with col_d1_s1:
                 st.write("Driver")
             with col_d1_s2:
-                selected_driver3 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver3", label_visibility="collapsed")
+                selected_driver3 = st.selectbox("ドライバー選択", driver_list, index=13, key="selected_driver3", label_visibility="collapsed")
             with col_d1_s3:
                 st.write("")
 
@@ -479,7 +479,7 @@ with col_d2:
             with col_d2_s1:
                 st.write("Driver")
             with col_d2_s2:
-                selected_driver4 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver4", label_visibility="collapsed")
+                selected_driver4 = st.selectbox("ドライバー選択", driver_list, index=14, key="selected_driver4", label_visibility="collapsed")
             with col_d2_s3:
                 st.write("")
 
@@ -679,120 +679,145 @@ if livego_practice:
 
             # ----------------------------- ベストタイム・サマリーの作成 -----------------------------------------------------
             # セッション・ベストタイムの抽出
-            if "LapTime" in practice_df.columns:
-                # 1行目: LapTime最小の行
+            if "LapTime" in practice_df.columns and not practice_df["LapTime"].isna().all():
+                # LapTimeにNaNでない値が存在する場合のみ処理を実行
                 min_laptime_idx = practice_df["LapTime"].idxmin()
-                best_laptime_row = practice_df.loc[[min_laptime_idx]].reindex(columns=best_display_columns).fillna("")
+                
+                # min_laptime_idxがNaNでないことを確認
+                if pd.notnull(min_laptime_idx):
+                    best_laptime_row = practice_df.loc[[min_laptime_idx]].reindex(columns=best_display_columns).fillna("")
 
-                # LapTime列をmm:ss.000形式に変換
-                if "LapTime" in best_laptime_row.columns:
-                    best_laptime_row["LapTime"] = best_laptime_row["LapTime"].apply(seconds_to_laptime)
+                    # LapTime列をmm:ss.000形式に変換
+                    if "LapTime" in best_laptime_row.columns:
+                        best_laptime_row["LapTime"] = best_laptime_row["LapTime"].apply(seconds_to_laptime)
 
-                # 2行目: 各Secの最小値とSpeed最大値の行
-                if sector == 3:
-                    sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
+                    # 2行目: 各Secの最小値とSpeed最大値の行
+                    if sector == 3:
+                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
+                    else:
+                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
+                    
+                    # NaNでない値が存在するかチェック
+                    best_sec_values = {}
+                    for col in sec_cols:
+                        if col in practice_df.columns and not practice_df[col].isna().all():
+                            best_sec_values[col] = practice_df[col].min()
+                        else:
+                            best_sec_values[col] = None
+                    
+                    best_speed_value = None
+                    if "Speed" in practice_df.columns and not practice_df["Speed"].isna().all():
+                        best_speed_value = practice_df["Speed"].max()
+
+                    # 2行目のベース（LapTime最小行のコピー）
+                    theoretical_row = practice_df.loc[[min_laptime_idx]].copy()
+                    # 各Sec列を最小値、Speedを最大値に置換
+                    for col in sec_cols:
+                        if best_sec_values[col] is not None:
+                            theoretical_row[col] = best_sec_values[col]
+                    if best_speed_value is not None:
+                        theoretical_row["Speed"] = best_speed_value
+                    # LapTime列はSec合計値をセット（理論値なので）
+                    if "LapTime" in theoretical_row.columns:
+                        valid_secs = [v for v in best_sec_values.values() if v is not None]
+                        if valid_secs:
+                            sec_sum = sum(valid_secs)
+                            theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
+                    # Driver Name列に"Theoretical Time"をセット
+                    if "Driver Name" in theoretical_row.columns:
+                        theoretical_row["Driver Name"] = "Theoretical Time"
+
+                    theoretical_row = theoretical_row.reindex(columns=best_display_columns).fillna("")
+
+                    # 2行を結合
+                    besttime_summary1 = pd.concat([best_laptime_row, theoretical_row], ignore_index=True)
                 else:
-                    sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
-                best_sec_values = {col: practice_df[col].min() for col in sec_cols}
-                best_speed_value = practice_df["Speed"].max() if "Speed" in practice_df.columns else None
-
-                # 2行目のベース（LapTime最小行のコピー）
-                theoretical_row = practice_df.loc[[min_laptime_idx]].copy()
-                # 各Sec列を最小値、Speedを最大値に置換
-                for col in sec_cols:
-                    theoretical_row[col] = best_sec_values[col]
-                if "Speed" in practice_df.columns and best_speed_value is not None:
-                    theoretical_row["Speed"] = best_speed_value
-                # LapTime列はSec合計値をセット（理論値なので）
-                if "LapTime" in theoretical_row.columns:
-                    sec_sum = sum([best_sec_values[col] for col in sec_cols])
-                    theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
-                # Driver Name列に"Theoretical Time"をセット
-                if "Driver Name" in theoretical_row.columns:
-                    theoretical_row["Driver Name"] = "Theoretical Time"
-
-
-                theoretical_row = theoretical_row.reindex(columns=best_display_columns).fillna("")
-
-                # 2行を結合
-                besttime_summary1 = pd.concat([best_laptime_row, theoretical_row], ignore_index=True)
+                    # min_laptime_idxがNaNの場合は空のデータフレームを作成
+                    besttime_summary1 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
+                    besttime_summary1.iloc[1, 0] = "Theoretical Time"
             else:
-                besttime_summary1 = practice_df.reindex(columns=best_display_columns).head(2).fillna("")
+                # LapTimeが存在しないか全てNaNの場合は空のデータフレームを作成
+                besttime_summary1 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
+                besttime_summary1.iloc[1, 0] = "Theoretical Time"
 
 
             # selected_driver1のベストタイムとセッションベストとの比較
             if "Driver" in practice_df.columns and "LapTime" in practice_df.columns:
                 # selected_driver1のデータを抽出
                 driver1_df = practice_df[practice_df["Driver"] == selected_driver1]
-                if not driver1_df.empty:
+                if not driver1_df.empty and not driver1_df["LapTime"].isna().all():
                     # 1行目: selected_driver1のLapTime最小の行
                     min_idx = driver1_df["LapTime"].idxmin()
-                    driver1_best_row = driver1_df.loc[[min_idx]].reindex(columns=best_display_columns).fillna("")
-                    
-                    # LapTimeをmm:ss.000形式に変換
-                    if "LapTime" in driver1_best_row.columns:
-                        driver1_best_row["LapTime"] = driver1_best_row["LapTime"].apply(seconds_to_laptime)
-                    
-                    # 2行目: セッションベストとの差分を計算
-                    if "LapTime" in practice_df.columns:
-                        session_best_laptime = practice_df["LapTime"].min()
-                        driver1_best_laptime = driver1_df["LapTime"].min()
+                    if pd.notnull(min_idx):
+                        driver1_best_row = driver1_df.loc[[min_idx]].reindex(columns=best_display_columns).fillna("")
                         
-                        # 差分行を作成
-                        diff_row = driver1_best_row.copy()
+                        # LapTimeをmm:ss.000形式に変換
+                        if "LapTime" in driver1_best_row.columns:
+                            driver1_best_row["LapTime"] = driver1_best_row["LapTime"].apply(seconds_to_laptime)
                         
-                        # LapTimeの差分を計算
-                        if pd.notnull(driver1_best_laptime) and pd.notnull(session_best_laptime):
-                            laptime_diff = driver1_best_laptime - session_best_laptime
-                            if laptime_diff >= 0:
-                                diff_row["LapTime"] = f"+{laptime_diff:.3f}"
-                            else:
-                                diff_row["LapTime"] = f"{laptime_diff:.3f}"
-                        else:
-                            diff_row["LapTime"] = ""
-
-                        # セクタータイムの差分を計算
-                        if sector == 3:
-                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
-                        else:
-                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
-                        
-                        for sec_col in sec_cols:
-                            if sec_col in practice_df.columns:
-                                session_best_sec = practice_df[sec_col].min()
-                                driver1_best_sec = driver1_df[sec_col].min()
-                                
-                                if pd.notnull(driver1_best_sec) and pd.notnull(session_best_sec):
-                                    sec_diff = driver1_best_sec - session_best_sec
-                                    if sec_diff >= 0:
-                                        diff_row[sec_col] = f"+{sec_diff:.3f}"
-                                    else:
-                                        diff_row[sec_col] = f"{sec_diff:.3f}"
-                                else:
-                                    diff_row[sec_col] = ""
-                        
-                        # Speedの差分を計算
-                        if "Speed" in practice_df.columns:
-                            session_best_speed = practice_df["Speed"].max()
-                            driver1_best_speed = driver1_df["Speed"].max()
+                        # 2行目: セッションベストとの差分を計算
+                        if "LapTime" in practice_df.columns:
+                            session_best_laptime = practice_df["LapTime"].min()
+                            driver1_best_laptime = driver1_df["LapTime"].min()
                             
-                            if pd.notnull(driver1_best_speed) and pd.notnull(session_best_speed):
-                                speed_diff = driver1_best_speed - session_best_speed
-                                if speed_diff >= 0:
-                                    diff_row["Speed"] = f"+{speed_diff:.2f}"
+                            # 差分行を作成
+                            diff_row = driver1_best_row.copy()
+                            
+                            # LapTimeの差分を計算
+                            if pd.notnull(driver1_best_laptime) and pd.notnull(session_best_laptime):
+                                laptime_diff = driver1_best_laptime - session_best_laptime
+                                if laptime_diff >= 0:
+                                    diff_row["LapTime"] = f"+{laptime_diff:.3f}"
                                 else:
-                                    diff_row["Speed"] = f"{speed_diff:.2f}"
+                                    diff_row["LapTime"] = f"{laptime_diff:.3f}"
                             else:
-                                diff_row["Speed"] = ""
-                        
-                        # Driver Name列を設定
-                        if "Driver Name" in diff_row.columns:
-                            diff_row["Driver Name"] = "Difference"
-                        
-                        # 2行を結合
-                        total_vs_driver_summary1 = pd.concat([driver1_best_row, diff_row], ignore_index=True)
+                                diff_row["LapTime"] = ""
+
+                            # セクタータイムの差分を計算
+                            if sector == 3:
+                                sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
+                            else:
+                                sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
+                            
+                            for sec_col in sec_cols:
+                                if sec_col in practice_df.columns:
+                                    session_best_sec = practice_df[sec_col].min()
+                                    driver1_best_sec = driver1_df[sec_col].min()
+                                    
+                                    if pd.notnull(driver1_best_sec) and pd.notnull(session_best_sec):
+                                        sec_diff = driver1_best_sec - session_best_sec
+                                        if sec_diff >= 0:
+                                            diff_row[sec_col] = f"+{sec_diff:.3f}"
+                                        else:
+                                            diff_row[sec_col] = f"{sec_diff:.3f}"
+                                    else:
+                                        diff_row[sec_col] = ""
+                            
+                            # Speedの差分を計算
+                            if "Speed" in practice_df.columns:
+                                session_best_speed = practice_df["Speed"].max()
+                                driver1_best_speed = driver1_df["Speed"].max()
+                                
+                                if pd.notnull(driver1_best_speed) and pd.notnull(session_best_speed):
+                                    speed_diff = driver1_best_speed - session_best_speed
+                                    if speed_diff >= 0:
+                                        diff_row["Speed"] = f"+{speed_diff:.2f}"
+                                    else:
+                                        diff_row["Speed"] = f"{speed_diff:.2f}"
+                                else:
+                                    diff_row["Speed"] = ""
+                            
+                            # Driver Name列を設定
+                            if "Driver Name" in diff_row.columns:
+                                diff_row["Driver Name"] = "Difference"
+                            
+                            # 2行を結合
+                            total_vs_driver_summary1 = pd.concat([driver1_best_row, diff_row], ignore_index=True)
+                        else:
+                            total_vs_driver_summary1 = driver1_best_row
                     else:
-                        total_vs_driver_summary1 = driver1_best_row
+                        # min_idxがNaNの場合
+                        total_vs_driver_summary1 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
                 else:
                     # ドライバーのデータがない場合
                     total_vs_driver_summary1 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
@@ -800,82 +825,85 @@ if livego_practice:
                 total_vs_driver_summary1 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
 
 
-
             # selected_driver2のベストタイムとセッションベストとの比較
             if "Driver" in practice_df.columns and "LapTime" in practice_df.columns:
                 # selected_driver2のデータを抽出
                 driver2_df = practice_df[practice_df["Driver"] == selected_driver2]
-                if not driver2_df.empty:
+                if not driver2_df.empty and not driver2_df["LapTime"].isna().all():
                     # 1行目: selected_driver2のLapTime最小の行
                     min_idx = driver2_df["LapTime"].idxmin()
-                    driver2_best_row = driver2_df.loc[[min_idx]].reindex(columns=best_display_columns).fillna("")
-                    
-                    # LapTimeをmm:ss.000形式に変換
-                    if "LapTime" in driver2_best_row.columns:
-                        driver2_best_row["LapTime"] = driver2_best_row["LapTime"].apply(seconds_to_laptime)
-                    
-                    # 2行目: セッションベストとの差分を計算
-                    if "LapTime" in practice_df.columns:
-                        session_best_laptime = practice_df["LapTime"].min()
-                        driver2_best_laptime = driver2_df["LapTime"].min()
+                    if pd.notnull(min_idx):
+                        driver2_best_row = driver2_df.loc[[min_idx]].reindex(columns=best_display_columns).fillna("")
                         
-                        # 差分行を作成
-                        diff_row = driver2_best_row.copy()
+                        # LapTimeをmm:ss.000形式に変換
+                        if "LapTime" in driver2_best_row.columns:
+                            driver2_best_row["LapTime"] = driver2_best_row["LapTime"].apply(seconds_to_laptime)
                         
-                        # LapTimeの差分を計算
-                        if pd.notnull(driver2_best_laptime) and pd.notnull(session_best_laptime):
-                            laptime_diff = driver2_best_laptime - session_best_laptime
-                            if laptime_diff >= 0:
-                                diff_row["LapTime"] = f"+{laptime_diff:.3f}"
-                            else:
-                                diff_row["LapTime"] = f"{laptime_diff:.3f}"
-                        else:
-                            diff_row["LapTime"] = ""
-
-                        
-                        # セクタータイムの差分を計算
-                        if sector == 3:
-                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
-                        else:
-                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
-                        
-                        for sec_col in sec_cols:
-                            if sec_col in practice_df.columns:
-                                session_best_sec = practice_df[sec_col].min()
-                                driver2_best_sec = driver2_df[sec_col].min()
-                                
-                                if pd.notnull(driver2_best_sec) and pd.notnull(session_best_sec):
-                                    sec_diff = driver2_best_sec - session_best_sec
-                                    if sec_diff >= 0:
-                                        diff_row[sec_col] = f"+{sec_diff:.3f}"
-                                    else:
-                                        diff_row[sec_col] = f"{sec_diff:.3f}"
-                                else:
-                                    diff_row[sec_col] = ""
-
-                        
-                        # Speedの差分を計算
-                        if "Speed" in practice_df.columns:
-                            session_best_speed = practice_df["Speed"].max()
-                            driver2_best_speed = driver2_df["Speed"].max()
+                        # 2行目: セッションベストとの差分を計算
+                        if "LapTime" in practice_df.columns:
+                            session_best_laptime = practice_df["LapTime"].min()
+                            driver2_best_laptime = driver2_df["LapTime"].min()
                             
-                            if pd.notnull(driver2_best_speed) and pd.notnull(session_best_speed):
-                                speed_diff = driver2_best_speed - session_best_speed
-                                if speed_diff >= 0:
-                                    diff_row["Speed"] = f"+{speed_diff:.2f}"
+                            # 差分行を作成
+                            diff_row = driver2_best_row.copy()
+                            
+                            # LapTimeの差分を計算
+                            if pd.notnull(driver2_best_laptime) and pd.notnull(session_best_laptime):
+                                laptime_diff = driver2_best_laptime - session_best_laptime
+                                if laptime_diff >= 0:
+                                    diff_row["LapTime"] = f"+{laptime_diff:.3f}"
                                 else:
-                                    diff_row["Speed"] = f"{speed_diff:.2f}"
+                                    diff_row["LapTime"] = f"{laptime_diff:.3f}"
                             else:
-                                diff_row["Speed"] = ""
-                        
-                        # Driver Name列を設定
-                        if "Driver Name" in diff_row.columns:
-                            diff_row["Driver Name"] = "Difference"
-                        
-                        # 2行を結合
-                        total_vs_driver_summary2 = pd.concat([driver2_best_row, diff_row], ignore_index=True)
+                                diff_row["LapTime"] = ""
+
+                            
+                            # セクタータイムの差分を計算
+                            if sector == 3:
+                                sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in practice_df.columns]
+                            else:
+                                sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in practice_df.columns]
+                            
+                            for sec_col in sec_cols:
+                                if sec_col in practice_df.columns:
+                                    session_best_sec = practice_df[sec_col].min()
+                                    driver2_best_sec = driver2_df[sec_col].min()
+                                    
+                                    if pd.notnull(driver2_best_sec) and pd.notnull(session_best_sec):
+                                        sec_diff = driver2_best_sec - session_best_sec
+                                        if sec_diff >= 0:
+                                            diff_row[sec_col] = f"+{sec_diff:.3f}"
+                                        else:
+                                            diff_row[sec_col] = f"{sec_diff:.3f}"
+                                    else:
+                                        diff_row[sec_col] = ""
+
+                            
+                            # Speedの差分を計算
+                            if "Speed" in practice_df.columns:
+                                session_best_speed = practice_df["Speed"].max()
+                                driver2_best_speed = driver2_df["Speed"].max()
+                                
+                                if pd.notnull(driver2_best_speed) and pd.notnull(session_best_speed):
+                                    speed_diff = driver2_best_speed - session_best_speed
+                                    if speed_diff >= 0:
+                                        diff_row["Speed"] = f"+{speed_diff:.2f}"
+                                    else:
+                                        diff_row["Speed"] = f"{speed_diff:.2f}"
+                                else:
+                                    diff_row["Speed"] = ""
+                            
+                            # Driver Name列を設定
+                            if "Driver Name" in diff_row.columns:
+                                diff_row["Driver Name"] = "Difference"
+                            
+                            # 2行を結合
+                            total_vs_driver_summary2 = pd.concat([driver2_best_row, diff_row], ignore_index=True)
+                        else:
+                            total_vs_driver_summary2 = driver2_best_row
                     else:
-                        total_vs_driver_summary2 = driver2_best_row
+                        # min_idxがNaNの場合
+                        total_vs_driver_summary2 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
                 else:
                     # ドライバーのデータがない場合
                     total_vs_driver_summary2 = pd.DataFrame({col: ["", ""] for col in best_display_columns})
@@ -887,37 +915,41 @@ if livego_practice:
             # ドライバー1のタイムデータ
             if "Driver" in practice_df.columns and "LapTime" in practice_df.columns:
                 driver_df = practice_df[practice_df["Driver"] == selected_driver3]
-                if not driver_df.empty:
+                if not driver_df.empty and not driver_df["LapTime"].isna().all():
                     # 1行目: LapTime最小の行
                     min_idx = driver_df["LapTime"].idxmin()
-                    best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
-                    # LapTimeをmm:ss.000形式に
-                    if "LapTime" in best_row.columns:
-                        best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
+                    if pd.notnull(min_idx):
+                        best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
+                        # LapTimeをmm:ss.000形式に
+                        if "LapTime" in best_row.columns:
+                            best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
 
-                    # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
-                    if sector == 3:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
+                        if sector == 3:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        else:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
+                        best_sec_values = {col: driver_df[col].min() for col in sec_cols}
+                        best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
+
+                        theoretical_row = best_row.copy()
+                        for col in sec_cols:
+                            theoretical_row[col] = best_sec_values[col]
+                        if "Speed" in driver_df.columns and best_speed_value is not None:
+                            theoretical_row["Speed"] = best_speed_value
+                        # LapTimeはSec合計
+                        if "LapTime" in theoretical_row.columns:
+                            sec_sum = sum([best_sec_values[col] for col in sec_cols])
+                            theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
+                        # 1列目ラベル
+                        if "" in best_row.columns:
+                            best_row.iloc[0, 0] = "Best Time"
+                            theoretical_row.iloc[0, 0] = "Theoretical"
+                        # 結合
+                        drivertime_df1_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
                     else:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
-                    best_sec_values = {col: driver_df[col].min() for col in sec_cols}
-                    best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
-
-                    theoretical_row = best_row.copy()
-                    for col in sec_cols:
-                        theoretical_row[col] = best_sec_values[col]
-                    if "Speed" in driver_df.columns and best_speed_value is not None:
-                        theoretical_row["Speed"] = best_speed_value
-                    # LapTimeはSec合計
-                    if "LapTime" in theoretical_row.columns:
-                        sec_sum = sum([best_sec_values[col] for col in sec_cols])
-                        theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
-                    # 1列目ラベル
-                    if "" in best_row.columns:
-                        best_row.iloc[0, 0] = "Best Time"
-                        theoretical_row.iloc[0, 0] = "Theoretical"
-                    # 結合
-                    drivertime_df1_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
+                        # min_idxがNaNの場合
+                        drivertime_df1_1 = pd.DataFrame(columns=dr_display_columns1)
                 else:
                     drivertime_df1_1 = pd.DataFrame(columns=dr_display_columns1)
             else:
@@ -939,37 +971,41 @@ if livego_practice:
             # ドライバー2のタイムデータ
             if "Driver" in practice_df.columns and "LapTime" in practice_df.columns:
                 driver_df = practice_df[practice_df["Driver"] == selected_driver4]
-                if not driver_df.empty:
+                if not driver_df.empty and not driver_df["LapTime"].isna().all():
                     # 1行目: LapTime最小の行
                     min_idx = driver_df["LapTime"].idxmin()
-                    best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
-                    # LapTimeをmm:ss.000形式に
-                    if "LapTime" in best_row.columns:
-                        best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
+                    if pd.notnull(min_idx):
+                        best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
+                        # LapTimeをmm:ss.000形式に
+                        if "LapTime" in best_row.columns:
+                            best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
 
-                    # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
-                    if sector == 3:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
+                        if sector == 3:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        else:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
+                        best_sec_values = {col: driver_df[col].min() for col in sec_cols}
+                        best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
+
+                        theoretical_row = best_row.copy()
+                        for col in sec_cols:
+                            theoretical_row[col] = best_sec_values[col]
+                        if "Speed" in driver_df.columns and best_speed_value is not None:
+                            theoretical_row["Speed"] = best_speed_value
+                        # LapTimeはSec合計
+                        if "LapTime" in theoretical_row.columns:
+                            sec_sum = sum([best_sec_values[col] for col in sec_cols])
+                            theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
+                        # 1列目ラベル
+                        if "" in best_row.columns:
+                            best_row.iloc[0, 0] = "Best Time"
+                            theoretical_row.iloc[0, 0] = "Theoretical"
+                        # 結合
+                        drivertime_df2_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
                     else:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
-                    best_sec_values = {col: driver_df[col].min() for col in sec_cols}
-                    best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
-
-                    theoretical_row = best_row.copy()
-                    for col in sec_cols:
-                        theoretical_row[col] = best_sec_values[col]
-                    if "Speed" in driver_df.columns and best_speed_value is not None:
-                        theoretical_row["Speed"] = best_speed_value
-                    # LapTimeはSec合計
-                    if "LapTime" in theoretical_row.columns:
-                        sec_sum = sum([best_sec_values[col] for col in sec_cols])
-                        theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
-                    # 1列目ラベル
-                    if "" in best_row.columns:
-                        best_row.iloc[0, 0] = "Best Time"
-                        theoretical_row.iloc[0, 0] = "Theoretical"
-                    # 結合
-                    drivertime_df2_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
+                        # min_idxがNaNの場合
+                        drivertime_df2_1 = pd.DataFrame(columns=dr_display_columns1)
                 else:
                     drivertime_df2_1 = pd.DataFrame(columns=dr_display_columns1)
             else:
@@ -991,37 +1027,41 @@ if livego_practice:
             # ドライバー3のタイムデータ
             if "Driver" in practice_df.columns and "LapTime" in practice_df.columns:
                 driver_df = practice_df[practice_df["Driver"] == selected_driver5]
-                if not driver_df.empty:
+                if not driver_df.empty and not driver_df["LapTime"].isna().all():
                     # 1行目: LapTime最小の行
                     min_idx = driver_df["LapTime"].idxmin()
-                    best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
-                    # LapTimeをmm:ss.000形式に
-                    if "LapTime" in best_row.columns:
-                        best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
+                    if pd.notnull(min_idx):
+                        best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
+                        # LapTimeをmm:ss.000形式に
+                        if "LapTime" in best_row.columns:
+                            best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
 
-                    # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
-                    if sector == 3:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
+                        if sector == 3:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        else:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
+                        best_sec_values = {col: driver_df[col].min() for col in sec_cols}
+                        best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
+
+                        theoretical_row = best_row.copy()
+                        for col in sec_cols:
+                            theoretical_row[col] = best_sec_values[col]
+                        if "Speed" in driver_df.columns and best_speed_value is not None:
+                            theoretical_row["Speed"] = best_speed_value
+                        # LapTimeはSec合計
+                        if "LapTime" in theoretical_row.columns:
+                            sec_sum = sum([best_sec_values[col] for col in sec_cols])
+                            theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
+                        # 1列目ラベル
+                        if "" in best_row.columns:
+                            best_row.iloc[0, 0] = "Best Time"
+                            theoretical_row.iloc[0, 0] = "Theoretical"
+                        # 結合
+                        drivertime_df3_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
                     else:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
-                    best_sec_values = {col: driver_df[col].min() for col in sec_cols}
-                    best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
-
-                    theoretical_row = best_row.copy()
-                    for col in sec_cols:
-                        theoretical_row[col] = best_sec_values[col]
-                    if "Speed" in driver_df.columns and best_speed_value is not None:
-                        theoretical_row["Speed"] = best_speed_value
-                    # LapTimeはSec合計
-                    if "LapTime" in theoretical_row.columns:
-                        sec_sum = sum([best_sec_values[col] for col in sec_cols])
-                        theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
-                    # 1列目ラベル
-                    if "" in best_row.columns:
-                        best_row.iloc[0, 0] = "Best Time"
-                        theoretical_row.iloc[0, 0] = "Theoretical"
-                    # 結合
-                    drivertime_df3_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
+                        # min_idxがNaNの場合
+                        drivertime_df3_1 = pd.DataFrame(columns=dr_display_columns1)
                 else:
                     drivertime_df3_1 = pd.DataFrame(columns=dr_display_columns1)
             else:
@@ -1043,37 +1083,41 @@ if livego_practice:
             # ドライバー4のタイムデータ
             if "Driver" in practice_df.columns and "LapTime" in practice_df.columns:
                 driver_df = practice_df[practice_df["Driver"] == selected_driver6]
-                if not driver_df.empty:
+                if not driver_df.empty and not driver_df["LapTime"].isna().all():
                     # 1行目: LapTime最小の行
                     min_idx = driver_df["LapTime"].idxmin()
-                    best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
-                    # LapTimeをmm:ss.000形式に
-                    if "LapTime" in best_row.columns:
-                        best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
+                    if pd.notnull(min_idx):
+                        best_row = driver_df.loc[[min_idx]].reindex(columns=dr_display_columns1).fillna("")
+                        # LapTimeをmm:ss.000形式に
+                        if "LapTime" in best_row.columns:
+                            best_row["LapTime"] = best_row["LapTime"].apply(seconds_to_laptime)
 
-                    # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
-                    if sector == 3:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        # 2行目: 各Secの最小値＋Speed最大値＋LapTimeはSec合計
+                        if sector == 3:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3"] if col in driver_df.columns]
+                        else:
+                            sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
+                        best_sec_values = {col: driver_df[col].min() for col in sec_cols}
+                        best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
+
+                        theoretical_row = best_row.copy()
+                        for col in sec_cols:
+                            theoretical_row[col] = best_sec_values[col]
+                        if "Speed" in driver_df.columns and best_speed_value is not None:
+                            theoretical_row["Speed"] = best_speed_value
+                        # LapTimeはSec合計
+                        if "LapTime" in theoretical_row.columns:
+                            sec_sum = sum([best_sec_values[col] for col in sec_cols])
+                            theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
+                        # 1列目ラベル
+                        if "" in best_row.columns:
+                            best_row.iloc[0, 0] = "Best Time"
+                            theoretical_row.iloc[0, 0] = "Theoretical"
+                        # 結合
+                        drivertime_df4_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
                     else:
-                        sec_cols = [col for col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"] if col in driver_df.columns]
-                    best_sec_values = {col: driver_df[col].min() for col in sec_cols}
-                    best_speed_value = driver_df["Speed"].max() if "Speed" in driver_df.columns else None
-
-                    theoretical_row = best_row.copy()
-                    for col in sec_cols:
-                        theoretical_row[col] = best_sec_values[col]
-                    if "Speed" in driver_df.columns and best_speed_value is not None:
-                        theoretical_row["Speed"] = best_speed_value
-                    # LapTimeはSec合計
-                    if "LapTime" in theoretical_row.columns:
-                        sec_sum = sum([best_sec_values[col] for col in sec_cols])
-                        theoretical_row["LapTime"] = seconds_to_laptime(sec_sum)
-                    # 1列目ラベル
-                    if "" in best_row.columns:
-                        best_row.iloc[0, 0] = "Best Time"
-                        theoretical_row.iloc[0, 0] = "Theoretical"
-                    # 結合
-                    drivertime_df4_1 = pd.concat([best_row, theoretical_row], ignore_index=True)
+                        # min_idxがNaNの場合
+                        drivertime_df4_1 = pd.DataFrame(columns=dr_display_columns1)
                 else:
                     drivertime_df4_1 = pd.DataFrame(columns=dr_display_columns1)
             else:

@@ -3,9 +3,9 @@
     "Last URL": "http://superformula.racelive.jp/live",
     "Last Circuit": 1,
     "Last Event": "2025 Round 6&7",
-    "Last Session": 1,
-    "Last StartTime": "14:50",
-    "Last EndTime": "15:50",
+    "Last Session": 5,
+    "Last StartTime": "15:15",
+    "Last EndTime": "16:30",
     "Race Lap": "36",
     "Time Path": "/Users/koichi-book/Documents/RaceLive Data/LapTime/2025/Rd6&7",
     "ambient ID": "51094",
@@ -1317,10 +1317,10 @@
     ],
     "Session": [
         {
-            "Name": "FP1",
-            "Date": "7/18",
-            "StartTime": "11:00",
-            "EndTime": "12:00",
+            "Name": "Reconnaissance",
+            "Date": "7/19",
+            "StartTime": "14:23",
+            "EndTime": "14:38",
             "Car": "22"
         },
         {
@@ -1340,15 +1340,15 @@
         {
             "Name": "Rd6 Q1-B",
             "Date": "7/19",
-            "StartTime": "09:25",
-            "EndTime": "09:35",
+            "StartTime": "09:35",
+            "EndTime": "09:45",
             "Car": "22"
         },
         {
             "Name": "Rd6 Q2",
             "Date": "7/19",
-            "StartTime": "09:45",
-            "EndTime": "09:52",
+            "StartTime": "09:55",
+            "EndTime": "10:02",
             "Car": "22"
         },
         {

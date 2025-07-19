@@ -194,9 +194,9 @@ if scraping:
         
         # 開始時間の1分前に設定
         scraping_start_dt = session_start_dt - timedelta(minutes=1)
-        
-        # 終了時間の2分後に設定
-        scraping_end_dt = session_end_dt + timedelta(minutes=2)
+
+        # 終了時間の3分後に設定
+        scraping_end_dt = session_end_dt + timedelta(minutes=3)
         
         # UNIXタイムスタンプに変換
         session_start = int(time.mktime(scraping_start_dt.timetuple()))
