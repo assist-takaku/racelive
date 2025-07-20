@@ -176,13 +176,69 @@ with col_8:
 
 st.write("---")
 
-# スクレイピング開始・停止をトグルで管理
-scraping = st.toggle("スクレイピング開始/停止", key="scraping")
+# 制御ファイルのパス
+control_file = "./data/scraping_control.json"
+
+def check_scraping_control():
+    """制御ファイルを確認してスクレイピング状態を取得"""
+    if os.path.exists(control_file):
+        try:
+            with open(control_file, "r", encoding="utf-8") as f:
+                control_data = json.load(f)
+            return control_data.get("scraping", False)
+        except:
+            return False
+    return False
+
+def update_scraping_status(status):
+    """制御ファイルにスクレイピング状態を更新"""
+    try:
+        if os.path.exists(control_file):
+            with open(control_file, "r", encoding="utf-8") as f:
+                control_data = json.load(f)
+        else:
+            control_data = {}
+        
+        control_data["scraping"] = status
+        control_data["timestamp"] = datetime.now().isoformat()
+        control_data["status_from"] = "livego.py"
+        
+        os.makedirs(os.path.dirname(control_file), exist_ok=True)
+        with open(control_file, "w", encoding="utf-8") as f:
+            json.dump(control_data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        st.error(f"制御ファイルの更新エラー: {e}")
+
+st.write("---")
+
+# 制御ファイルを監視してスクレイピングを制御
+scraping = check_scraping_control()
+
+# スクレイピング状態表示
+if scraping:
+    st.markdown("#### 🟢 スクレイピング実行中")
+    status_color = "green"
+else:
+    st.markdown("#### 🔴 スクレイピング停止中")
+    status_color = "red"
+
+# 状態表示ボックス
+st.markdown(f"""
+<div style="background-color: {status_color}; padding: 10px; border-radius: 5px; color: white; text-align: center; margin: 10px 0;">
+    <h3>制御状態: {'実行中' if scraping else '停止中'}</h3>
+</div>
+""", unsafe_allow_html=True)
+
+# 手動制御用のトグル（オプション）
+manual_control = st.toggle("手動制御", key="manual_toggle")
+if manual_control:
+    manual_scraping = st.toggle("手動スクレイピング開始/停止", value=scraping, key="manual_scraping")
+    if manual_scraping != scraping:
+        update_scraping_status(manual_scraping)
+        st.rerun()
 
 if scraping:
-    st.markdown("#### スクレイピング実行中")
-
-    # セッション開始時間の1分前からスクレイピング開始
+    # 既存のスクレイピング処理
     try:
         # セッション開始時間をdatetimeオブジェクトに変換
         session_start_str = f"{session_date} {session_starttime}:00"
@@ -208,20 +264,29 @@ if scraping:
         # 開始時刻まで待機するかどうかの判定
         if now < scraping_start_dt:
             remaining_time = scraping_start_dt - now
+            st.info(f"⏰ 開始まで: {remaining_time}")
         elif now > scraping_end_dt:
-            st.error("スクレイピング終了時刻を過ぎています")
+            st.error("⚠️ スクレイピング終了時刻を過ぎています")
+            # 自動的に停止
+            update_scraping_status(False)
         else:
-            st.success("スクレイピング実行中")
+            st.success("✅ スクレイピング実行中")
         
     except ValueError as e:
         st.error(f"時刻の形式エラー: {e}")
         # エラーの場合は現在時刻から2分間のデフォルト設定
-        session_start = int(time.mktime(datetime.now().utctimetuple()))
-        session_end = int(time.mktime((datetime.now() + timedelta(minutes=2)).utctimetuple()))
+        session_start = int(time.mktime(datetime.now().timetuple()))
+        session_end = int(time.mktime((datetime.now() + timedelta(minutes=2)).timetuple()))
 
-    # スクレイピング
-    scraper = Racelivescraper(url, df0, category_index, sector, car_no_list, driver_list, mk, save_path)
-    timedata = scraper.livetime(session_start, session_end)
+    # スクレイピング実行
+    try:
+        scraper = Racelivescraper(url, df0, category_index, sector, car_no_list, driver_list, mk, save_path)
+        timedata = scraper.livetime(session_start, session_end)
+    except Exception as e:
+        st.error(f"スクレイピングエラー: {e}")
+        # エラー時は自動停止
+        update_scraping_status(False)
 
-else:
-    st.markdown("#### スクレイピング停止中")
+# 自動リフレッシュ（1秒毎に制御ファイルをチェック）
+time.sleep(1)
+st.rerun()
