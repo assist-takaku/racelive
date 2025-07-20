@@ -477,40 +477,37 @@ with st.sidebar:
             with open(control_file, "r", encoding="utf-8") as f:
                 control_data = json.load(f)
             current_status = control_data.get("scraping", False)
+            status_message = control_data.get("message", "")
+            last_update = control_data.get("timestamp", "")
         except:
             current_status = False
-            control_data = {"scraping": False}
+            status_message = ""
+            last_update = ""
     else:
         current_status = False
-        control_data = {"scraping": False, "timestamp": datetime.now().isoformat()}
+        status_message = ""
+        last_update = ""
     
-    # 設定情報の表示
-    if os.path.exists("./data/racelive.json"):
-        try:
-            sf_setfile = json.load(open("./data/racelive.json", "r", encoding="utf-8"))
-            category = sf_setfile["Category"][sf_setfile["Last Category"]]["Name"]
-            session_name = sf_setfile["Session"][sf_setfile["Last Session"]]["Name"]
-            session_starttime = sf_setfile["Last StartTime"]
-            session_endtime = sf_setfile["Last EndTime"]
-            
-            st.write(f"**カテゴリ**: {category}")
-            st.write(f"**セッション**: {session_name}")
-            st.write(f"**時間**: {session_starttime} - {session_endtime}")
-        except:
-            st.warning("設定ファイルの読み込みエラー")
+    # 状態表示
+    status_text = "🟢 実行中" if current_status else "🔴 停止中"
+    st.write(f"**現在の状態**: {status_text}")
+    if status_message:
+        st.caption(f"詳細: {status_message}")
+    if last_update:
+        st.caption(f"更新時刻: {last_update[:19]}")
     
     # トグルで制御
     scraping_status = st.toggle("スクレイピング制御", value=current_status, key="scraping_control")
     
     # 状態が変更された場合にファイルに保存
     if scraping_status != current_status:
-        control_data["scraping"] = scraping_status
-        control_data["timestamp"] = datetime.now().isoformat()
-        control_data["command_from"] = "main.py"
+        control_data = {
+            "scraping": scraping_status,
+            "timestamp": datetime.now().isoformat(),
+            "command_from": "main.py"
+        }
         
-        # ディレクトリが存在しない場合は作成
         os.makedirs(os.path.dirname(control_file), exist_ok=True)
-        
         with open(control_file, "w", encoding="utf-8") as f:
             json.dump(control_data, f, ensure_ascii=False, indent=2)
         
@@ -519,11 +516,6 @@ with st.sidebar:
         else:
             st.info("⏹️ スクレイピング停止指示を送信")
     
-    # 現在の状態表示
-    status_text = "🟢 実行中" if current_status else "🔴 停止中"
-    st.write(f"**現在の状態**: {status_text}")
-    
-    # livego.pyへのリンク
     st.markdown("---")
-    st.markdown("📊 [livego.py にアクセス](http://localhost:8501) (同じポート)")
-    st.caption("livego.pyを別途起動してください")
+    st.caption("livego.pyをバックグラウンドで実行してください")
+    st.code("poetry run python src/racelive/livego.py")
