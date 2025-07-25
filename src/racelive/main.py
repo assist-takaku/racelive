@@ -48,6 +48,8 @@ import threading
 import json
 import schedule
 import concurrent.futures
+import subprocess
+import signal
 import pandas as pd
 from datetime import datetime, timedelta
 import plotly.express as px
@@ -58,6 +60,9 @@ from selenium.webdriver.chrome.options import Options
 import streamlit as st
 from streamlit.column_config import Column
 from streamlit_autorefresh import st_autorefresh
+
+# psutilのインポート（プロセス管理用）
+import psutil
 
 # プロジェクトルートをsys.pathに追加
 project_root = Path(__file__).parent.parent.parent
@@ -89,6 +94,10 @@ lastevent = sf_setfile["Last Event"]
 lastcategory = sf_setfile["Last Category"]
 lastsession = sf_setfile["Last Session"]
 race_lap = sf_setfile["Race Lap"]
+
+# オフセット値を取得（デフォルト値を設定）
+default_offset_start = sf_setfile.get("Offset Start", 1)
+default_offset_end = sf_setfile.get("Offset End", 3)
 # --------------------------------------------------------------------------------------------------------
 
 
@@ -96,19 +105,20 @@ race_lap = sf_setfile["Race Lap"]
 
 
 # -------------------------- タブ前データ表示エリア ----------------------------------------------------------
-with st.container(border=True):
 
-    # タブ前データ表示エリア列設定
-    col_w1, col_w2, col_w3, col_w4, col_w5, col_w6, col_w7, col_w8 = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
+# with st.container(border=True):
 
-    with col_w1: weather_temp_placeholder = st.empty()
-    with col_w2: ambient_track_temp_placeholder = st.empty()
-    with col_w3: weather_wind_speed_placeholder = st.empty()
-    with col_w4: weather_wind_dir_placeholder = st.empty()
-    with col_w5: st.write("")
-    with col_w6: st.write("")
-    with col_w7: st.write("")
-    with col_w8: st.write("")
+#     # タブ前データ表示エリア列設定
+#     col_w1, col_w2, col_w3, col_w4, col_w5, col_w6, col_w7, col_w8 = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
+
+#     with col_w1: weather_temp_placeholder = st.empty()
+#     with col_w2: ambient_track_temp_placeholder = st.empty()
+#     with col_w3: weather_wind_speed_placeholder = st.empty()
+#     with col_w4: weather_wind_dir_placeholder = st.empty()
+#     with col_w5: st.write("")
+#     with col_w6: st.write("")
+#     with col_w7: st.write("")
+#     with col_w8: st.write("")
 
 
 # -------------------------- タブの作成 --------------------------------------------------------------------
@@ -118,35 +128,20 @@ setup, teaminfo, circuit = st.tabs(["Setup", "Team Information", "Circuit"])
 # -------------------------- イベント情報の表示・編集タブ --------------------------------------------------
 with setup:
 
-    # 設定タブ：情報表示・編集1列目
-    col_s1, col_s2, col_s3, col_s4 = st.columns([4, 2, 1, 1])
     # タイトルメッセージ表示
+    st.write("# Super Formula Race Live SetUp")
+    st.write("")
+
+    # カテゴリ選択ボックス
+    col_s1, col_s2, col_s3, col_s4, col_s5, col_s6, col_s7 = st.columns([1, 1, 1, 1, 1, 1, 1])
+
     with col_s1:
-        st.write("Super Formula Race Live SetUp")
-    # タイトルメッセージ表示用の空の列
-    with col_s2:
-        st.write("")
-
-    # タイトルメッセージ表示用の空の列
-    with col_s3:
-        st.write("")
-
-    # タイトルメッセージ表示用の空の列
-    with col_s4:
-        st.write("")
-
-    # 設定タブ：情報表示・編集2列目
-    col_s5, col_s6 = st.columns([1, 5])
-    # イベント名、サーキット選択ボックス、参加台数、レースラップの入力欄
-    with col_s5:
         with st.container(border=True):
-
             # カテゴリ選択ボックス
             category_name = st.selectbox(
-                "Category",
+                "カテゴリ選択",
                 category_list,
                 index=category_list.index(st.session_state.get("last_selected_category", category_list[lastcategory])),
-                label_visibility="collapsed"
             )
             # 選択されたカテゴリをセッションステートに保存
             st.session_state["category_name"] = category_name
@@ -174,7 +169,6 @@ with setup:
                 st.session_state["categoryurl"] = sf_setfile["Category"][selected_category_index]["URL"]
                 st.session_state["last_selected_category"] = category_name # 選択されたカテゴリを記録
 
-
             # カテゴリに基づいてチームリストを取得
             datal = Datalist(selected_category_index)
             teamlist, mk, mk2 = datal.teamlist()
@@ -183,12 +177,18 @@ with setup:
             df_team = pd.DataFrame(teamlist)
             st.session_state["df_team"] = df_team
 
+    # イベント名入力
+    with col_s2:
+        with st.container(border=True):
             st.text_input("イベント", value=lastevent, key="lastevent_name")
 
+    # サーキット選択ボックス
+    with col_s3:
+        with st.container(border=True):
             last_circuit_index = sf_setfile["Last Circuit"]
             # サーキット選択ボックス
             circuit_name = st.selectbox(
-                "Circuit",
+                "サーキット選択",
                 circuit_list,
                 index=circuit_list.index(st.session_state.get("circuit_name", circuit_list[last_circuit_index])),
                 key="circuit_name"
@@ -199,87 +199,188 @@ with setup:
             sector = sf_setfile["Circuit"][selected_circuit_index]["Sector"]
             st.session_state["sector"] = sector
 
-            # 選択されたセッションのインデックスを取得
-            session_name = st.selectbox("セッション選択", session_list, index=lastsession, key="session_select")
-            selected_session_index = session_list.index(session_name)
-            # セッションステートに保存
-            st.session_state["selected_session_index"] = selected_session_index
-
+    # 参加台数表示
+    with col_s4:
+        with st.container(border=True):
             car_max = st.text_input("参加台数 :", value=len(car_no_list ), key="car_max")
 
-            # Race Lapを入力可能にする
-            race_lap_input = st.text_input("レースラップ :", value=st.session_state.get("race_lap", race_lap), key="race_lap")
+    # セッション・スタート・オフセット値入力
+    with col_s5:
+        with st.container(border=True):
+            offset_start= st.number_input(
+                "スタート・オフセット・分単位",
+                min_value=0,
+                max_value=10,
+                value=default_offset_start,
+                step=1
+            )
 
-    # イベント・タイム・テーブルの入力欄
+    # セッション・エンド・オフセット値入力
     with col_s6:
         with st.container(border=True):
-            st.write("イベント・タイム・テーブル")
-            ses1, ses2, ses3, ses4, ses5, ses6, ses7, ses8, sec9, sec10= st.columns([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-            with ses1:
-                with st.container(border=True):
-                    st.text_input("セッション1", value=sf_setfile["Session"][0]["Name"], key="session1_name")
-                    st.text_input("日時", value=sf_setfile["Session"][0]["Date"], key="session1_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][0]["StartTime"], key="session1_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][0]["EndTime"], key="session1_end")
-            with ses2:
-                with st.container(border=True):
-                    st.text_input("セッション2", value=sf_setfile["Session"][1]["Name"], key="session2_name")
-                    st.text_input("日時", value=sf_setfile["Session"][1]["Date"], key="session2_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][1]["StartTime"], key="session2_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][1]["EndTime"], key="session2_end")
-            with ses3:
-                with st.container(border=True):
-                    st.text_input("セッション3", value=sf_setfile["Session"][2]["Name"], key="session3_name")
-                    st.text_input("日時", value=sf_setfile["Session"][2]["Date"], key="session3_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][2]["StartTime"], key="session3_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][2]["EndTime"], key="session3_end")
-            with ses4:
-                with st.container(border=True):
-                    st.text_input("セッション4", value=sf_setfile["Session"][3]["Name"], key="session4_name")
-                    st.text_input("日時", value=sf_setfile["Session"][3]["Date"], key="session4_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][3]["StartTime"], key="session4_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][3]["EndTime"], key="session4_end")
-            with ses5:
-                with st.container(border=True):
-                    st.text_input("セッション5", value=sf_setfile["Session"][4]["Name"], key="session5_name")
-                    st.text_input("日時", value=sf_setfile["Session"][4]["Date"], key="session5_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][4]["StartTime"], key="session5_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][4]["EndTime"], key="session5_end")
-            with ses6:
-                with st.container(border=True):
-                    st.text_input("セッション6", value=sf_setfile["Session"][5]["Name"], key="session6_name")
-                    st.text_input("日時", value=sf_setfile["Session"][5]["Date"], key="session6_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][5]["StartTime"], key="session6_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][5]["EndTime"], key="session6_end")
-            with ses7:
-                with st.container(border=True):
-                    st.text_input("セッション7", value=sf_setfile["Session"][6]["Name"], key="session7_name")
-                    st.text_input("日時", value=sf_setfile["Session"][6]["Date"], key="session7_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][6]["StartTime"], key="session7_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][6]["EndTime"], key="session7_end")
-            with ses8:
-                with st.container(border=True):
-                    st.text_input("セッション8", value=sf_setfile["Session"][7]["Name"], key="session8_name")
-                    st.text_input("日時", value=sf_setfile["Session"][7]["Date"], key="session8_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][7]["StartTime"], key="session8_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][7]["EndTime"], key="session8_end")
-            with sec9:
-                with st.container(border=True):
-                    st.text_input("セッション9", value=sf_setfile["Session"][8]["Name"], key="session9_name")
-                    st.text_input("日時", value=sf_setfile["Session"][8]["Date"], key="session9_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][8]["StartTime"], key="session9_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][8]["EndTime"], key="session9_end")
-            with sec10:
-                with st.container(border=True):
-                    st.text_input("セッション10", value=sf_setfile["Session"][9]["Name"], key="session10_name")
-                    st.text_input("日時", value=sf_setfile["Session"][9]["Date"], key="session10_date")
-                    st.text_input("開始時間", value=sf_setfile["Session"][9]["StartTime"], key="session10_start")
-                    st.text_input("終了時間", value=sf_setfile["Session"][9]["EndTime"], key="session10_end")
+            offset_end = st.number_input(
+                "エンド・オフセット・分単位",
+                min_value=0,
+                max_value=10,
+                value=default_offset_end,
+                step=1
+            )
 
+    # 設定保存ボタン
+    with col_s7:
+        with st.container(border=True):
+            st.write("")
+            # プッシュボタン
+            if st.button("データ保存"):
+                # JSONデータを更新
+                sf_setfile["Time Path"] = st.session_state.get("livetime_file_path", time_path)
+                sf_setfile["weather Path"] = st.session_state.get("weather_file_path", weather_Path)
+                sf_setfile["ambient ID"] = st.session_state.get("ambient_id", ambientid)
+                sf_setfile["ambient readKey"] = st.session_state.get("ambient_readKey", ambientreadKey)
+                sf_setfile["Last Event"] = st.session_state.get("lastevent_name", lastevent)
+                sf_setfile["Last Circuit"] = st.session_state.get("selected_circuit_index", sf_setfile["Last Circuit"])
+                sf_setfile["Last URL"] = st.session_state.get("categoryurl", sf_setfile["Last URL"])
+                sf_setfile["Last Category"] = category_list.index(st.session_state["category_name"])
+                sf_setfile["Last Session"] = st.session_state.get("selected_session_index", 0)
+                
+                # オフセット値を保存
+                sf_setfile["Offset Start"] = offset_start
+                sf_setfile["Offset End"] = offset_end
+
+                # 選択されたカテゴリのURLを更新
+                selected_category_index = category_list.index(st.session_state.get("last_selected_category", category_list[0]))
+                sf_setfile["Category"][selected_category_index]["URL"] = st.session_state.get("categoryurl", "")
+
+                # イベント・タイム・テーブルのデータを更新
+                for i in range(10):  # セッションは1～10まで
+                    session_key = f"session{i+1}_name"
+                    date_key = f"session{i+1}_date"
+                    start_key = f"session{i+1}_start"
+                    end_key = f"session{i+1}_end"
+
+                    sf_setfile["Session"][i]["Name"] = st.session_state.get(session_key, sf_setfile["Session"][i]["Name"])
+                    sf_setfile["Session"][i]["Date"] = st.session_state.get(date_key, sf_setfile["Session"][i]["Date"])
+                    sf_setfile["Session"][i]["StartTime"] = st.session_state.get(start_key, sf_setfile["Session"][i]["StartTime"])
+                    sf_setfile["Session"][i]["EndTime"] = st.session_state.get(end_key, sf_setfile["Session"][i]["EndTime"])
+                    sf_setfile["Session"][i]["Lap"] = st.session_state.get(f"session{i+1}_lap", sf_setfile["Session"][i]["Lap"])
+
+                # JSONファイルに書き込み
+                with open("./data/racelive.json", "w", encoding="utf-8") as f:
+                    json.dump(sf_setfile, f, ensure_ascii=False, indent=4)
+
+                # セッションリストを更新してサイドバーに反映
+                session_list = [n["Name"] for n in sf_setfile["Session"]]
+                
+                # 保存成功フラグを設定
+                st.session_state["save_success"] = True
+                
+                # ページを再読み込みしてサイドバーの表示を更新
+                st.rerun()
+            
+            # 保存成功メッセージ表示
+            if st.session_state.get("save_success"):
+                # カスタムCSSでメッセージボックスのサイズを調整
+                st.markdown(
+                    """
+                    <style>
+                    .custom-success {
+                        background-color: #d4edda;
+                        border: 1px solid #c3e6cb;
+                        color: #155724;
+                        padding: 8px 12px;
+                        border-radius: 4px;
+                        margin: 4px 0;
+                        font-size: 14px;
+                        text-align: center;
+                    }
+                    </style>
+                    <div class="custom-success">
+                        ✅ 変更を保存しました。
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                # メッセージを一度だけ表示するためにフラグをリセット
+                st.session_state["save_success"] = False
+
+
+    with st.container(border=True):
+        st.write("イベント・タイム・テーブル")
+        ses1, ses2, ses3, ses4, ses5, ses6, ses7, ses8, sec9, sec10= st.columns([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        with ses1:
+            with st.container(border=True):
+                st.text_input("セッション1", value=sf_setfile["Session"][0]["Name"], key="session1_name")
+                st.text_input("日時", value=sf_setfile["Session"][0]["Date"], key="session1_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][0]["StartTime"], key="session1_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][0]["EndTime"], key="session1_end")
+                st.text_input("周回数", value=sf_setfile["Session"][0]["Lap"], key="session1_lap")
+        with ses2:
+            with st.container(border=True):
+                st.text_input("セッション2", value=sf_setfile["Session"][1]["Name"], key="session2_name")
+                st.text_input("日時", value=sf_setfile["Session"][1]["Date"], key="session2_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][1]["StartTime"], key="session2_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][1]["EndTime"], key="session2_end")
+                st.text_input("周回数", value=sf_setfile["Session"][1]["Lap"], key="session2_lap")
+        with ses3:
+            with st.container(border=True):
+                st.text_input("セッション3", value=sf_setfile["Session"][2]["Name"], key="session3_name")
+                st.text_input("日時", value=sf_setfile["Session"][2]["Date"], key="session3_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][2]["StartTime"], key="session3_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][2]["EndTime"], key="session3_end")
+                st.text_input("周回数", value=sf_setfile["Session"][2]["Lap"], key="session3_lap")
+        with ses4:
+            with st.container(border=True):
+                st.text_input("セッション4", value=sf_setfile["Session"][3]["Name"], key="session4_name")
+                st.text_input("日時", value=sf_setfile["Session"][3]["Date"], key="session4_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][3]["StartTime"], key="session4_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][3]["EndTime"], key="session4_end")
+                st.text_input("周回数", value=sf_setfile["Session"][3]["Lap"], key="session4_lap")
+        with ses5:
+            with st.container(border=True):
+                st.text_input("セッション5", value=sf_setfile["Session"][4]["Name"], key="session5_name")
+                st.text_input("日時", value=sf_setfile["Session"][4]["Date"], key="session5_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][4]["StartTime"], key="session5_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][4]["EndTime"], key="session5_end")
+                st.text_input("周回数", value=sf_setfile["Session"][4]["Lap"], key="session5_lap")
+        with ses6:
+            with st.container(border=True):
+                st.text_input("セッション6", value=sf_setfile["Session"][5]["Name"], key="session6_name")
+                st.text_input("日時", value=sf_setfile["Session"][5]["Date"], key="session6_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][5]["StartTime"], key="session6_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][5]["EndTime"], key="session6_end")
+                st.text_input("周回数", value=sf_setfile["Session"][5]["Lap"], key="session6_lap")
+        with ses7:
+            with st.container(border=True):
+                st.text_input("セッション7", value=sf_setfile["Session"][6]["Name"], key="session7_name")
+                st.text_input("日時", value=sf_setfile["Session"][6]["Date"], key="session7_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][6]["StartTime"], key="session7_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][6]["EndTime"], key="session7_end")
+                st.text_input("周回数", value=sf_setfile["Session"][6]["Lap"], key="session7_lap")
+        with ses8:
+            with st.container(border=True):
+                st.text_input("セッション8", value=sf_setfile["Session"][7]["Name"], key="session8_name")
+                st.text_input("日時", value=sf_setfile["Session"][7]["Date"], key="session8_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][7]["StartTime"], key="session8_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][7]["EndTime"], key="session8_end")
+                st.text_input("周回数", value=sf_setfile["Session"][7]["Lap"], key="session8_lap")
+        with sec9:
+            with st.container(border=True):
+                st.text_input("セッション9", value=sf_setfile["Session"][8]["Name"], key="session9_name")
+                st.text_input("日時", value=sf_setfile["Session"][8]["Date"], key="session9_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][8]["StartTime"], key="session9_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][8]["EndTime"], key="session9_end")
+                st.text_input("周回数", value=sf_setfile["Session"][8]["Lap"], key="session9_lap")
+        with sec10:
+            with st.container(border=True):
+                st.text_input("セッション10", value=sf_setfile["Session"][9]["Name"], key="session10_name")
+                st.text_input("日時", value=sf_setfile["Session"][9]["Date"], key="session10_date")
+                st.text_input("開始時間", value=sf_setfile["Session"][9]["StartTime"], key="session10_start")
+                st.text_input("終了時間", value=sf_setfile["Session"][9]["EndTime"], key="session10_end")
+                st.text_input("周回数", value=sf_setfile["Session"][9]["Lap"], key="session10_lap")
 
     # 設定タブ：情報表示・編集3列目
-    col_s7, col_s8 = st.columns([1, 1])
-    with col_s7:
+    col_s10, col_s11 = st.columns([1, 1])
+    with col_s10:
         with st.container(border=True):
             col_s6_1, col_s6_2 = st.columns([1, 2])
             with col_s6_1:
@@ -295,7 +396,7 @@ with setup:
             with col_s6_2:
                 st.text_input("タイムデータ保存先", label_visibility="collapsed", value=time_path, key="livetime_file_path")
 
-    with col_s8:
+    with col_s11:
         with st.container(border=True):
             col_s7_1, col_s7_2 = st.columns([1, 2])
             with col_s7_1:
@@ -310,6 +411,7 @@ with setup:
                 )
             with col_s7_2:
                 st.text_input("ウェザーデータ読み込み先", label_visibility="collapsed", value=weather_Path, key="weather_file_path")
+
     # 設定タブ：情報表示・編集4列目
     with st.container(border=True):
         col_s9, col_s10, col_s11, col_s12, col_s13, col_s14 = st.columns([1, 1, 1, 1, 1, 3])
@@ -325,60 +427,6 @@ with setup:
             st.write("Race Live URL")
         with col_s14:
             url = st.text_input("URL", label_visibility="collapsed", key="categoryurl")
-
-    # 設定タブ：保存ボタン・編集5列目
-    col_s9, col_s10, col_s11, col_s12 = st.columns([3, 1, 1, 1])
-    # タイトルメッセージ表示
-    with col_s9:
-        st.write("")
-    # タイトルメッセージ表示用の空の列
-    with col_s10:
-        st.write("")
-    # データ変更ボタン配置＆設定
-    with col_s11:
-        # プッシュボタン
-        if st.button("データ保存"):
-            # JSONデータを更新
-            sf_setfile["Time Path"] = st.session_state.get("livetime_file_path", time_path)
-            sf_setfile["weather Path"] = st.session_state.get("weather_file_path", weather_Path)
-            sf_setfile["ambient ID"] = st.session_state.get("ambient_id", ambientid)
-            sf_setfile["ambient readKey"] = st.session_state.get("ambient_readKey", ambientreadKey)
-            sf_setfile["Last Event"] = st.session_state.get("lastevent_name", lastevent)
-            sf_setfile["Race Lap"] = st.session_state.get("race_lap", race_lap_input)
-            sf_setfile["Last Circuit"] = st.session_state.get("selected_circuit_index", sf_setfile["Last Circuit"])
-            sf_setfile["Last URL"] = st.session_state.get("categoryurl", sf_setfile["Last URL"])
-            sf_setfile["Last Category"] = category_list.index(st.session_state["category_name"])
-            sf_setfile["Last Session"] = st.session_state.get("selected_session_index", 0)
-
-
-            # 選択されたカテゴリのURLを更新
-            selected_category_index = category_list.index(st.session_state.get("last_selected_category", category_list[0]))
-            sf_setfile["Category"][selected_category_index]["URL"] = st.session_state.get("categoryurl", "")
-
-            # イベント・タイム・テーブルのデータを更新
-            for i in range(10):  # セッションは1～10まで
-                session_key = f"session{i+1}_name"
-                date_key = f"session{i+1}_date"
-                start_key = f"session{i+1}_start"
-                end_key = f"session{i+1}_end"
-
-                sf_setfile["Session"][i]["Name"] = st.session_state.get(session_key, sf_setfile["Session"][i]["Name"])
-                sf_setfile["Session"][i]["Date"] = st.session_state.get(date_key, sf_setfile["Session"][i]["Date"])
-                sf_setfile["Session"][i]["StartTime"] = st.session_state.get(start_key, sf_setfile["Session"][i]["StartTime"])
-                sf_setfile["Session"][i]["EndTime"] = st.session_state.get(end_key, sf_setfile["Session"][i]["EndTime"])
-
-            # JSONファイルに書き込み
-            with open("./data/racelive.json", "w", encoding="utf-8") as f:
-                json.dump(sf_setfile, f, ensure_ascii=False, indent=4)
-
-            # 保存成功フラグを設定
-            st.session_state["save_success"] = True
-    # データ保存ボタンの横にメッセージ表示
-    with col_s12:
-        if st.session_state.get("save_success"):
-            st.success("変更を保存しました。")
-            # メッセージを一度だけ表示するためにフラグをリセット
-            st.session_state["save_success"] = False
 
 
 # -------------------------- チーム情報の表示・編集タブ ----------------------------------------------------
@@ -491,10 +539,10 @@ with st.sidebar:
     # 状態表示
     status_text = "🟢 実行中" if current_status else "🔴 停止中"
     st.write(f"**現在の状態**: {status_text}")
-    if status_message:
-        st.caption(f"詳細: {status_message}")
-    if last_update:
-        st.caption(f"更新時刻: {last_update[:19]}")
+    # if status_message:
+    #     st.caption(f"詳細: {status_message}")
+    # if last_update:
+    #     st.caption(f"更新時刻: {last_update[:19]}")
     
     # トグルで制御
     scraping_status = st.toggle("スクレイピング制御", value=current_status, key="scraping_control")
@@ -515,7 +563,110 @@ with st.sidebar:
             st.success("✅ スクレイピング開始指示を送信")
         else:
             st.info("⏹️ スクレイピング停止指示を送信")
+
+    # 最新のJSONファイルを再読み込みしてセッションリストを更新
+    current_sf_setfile = json.load(open("./data/racelive.json", "r", encoding="utf-8"))
+    current_session_list = [n["Name"] for n in current_sf_setfile["Session"]]
     
+    # 選択されたセッションのインデックスを取得
+    session_name = st.sidebar.selectbox("セッション選択", current_session_list, index=current_sf_setfile["Last Session"])
+    selected_session_index = current_session_list.index(session_name)
+
+    # 選択されたセッションの詳細を取得
+    time_path = current_sf_setfile["Time Path"]
+    lastevent = current_sf_setfile["Last Event"]
+    selected_session = current_sf_setfile["Session"][selected_session_index]
+    session_date = selected_session["Date"]
+    session_start = selected_session["StartTime"]
+    session_end = selected_session["EndTime"]
+    lap_number = selected_session["Lap"]
+
+    # サイドバーに日時、開始時間、終了時間を表示
+    st.sidebar.markdown(f"**日時:** {session_date}")
+    st.sidebar.markdown(f"**開始時間:** {session_start}")
+    st.sidebar.markdown(f"**終了時間:** {session_end}")
+    st.sidebar.markdown(f"**周回数:** {lap_number}")
+    
+    # 操作手順をより綺麗に表示
+    st.sidebar.markdown("---")
+    st.sidebar.info(
+        """
+        📝 **操作手順**
+        
+        1. セッションを選択
+        2. OKボタンを押す
+        3. スクレイピングを実行
+        """
+    )
+
+    # セッション選択ボタンの処理
+    if st.sidebar.button("OK"):
+        # JSONファイルのデータを更新
+        current_sf_setfile["Last Session"] = selected_session_index
+        current_sf_setfile["Last StartTime"] = session_start
+        current_sf_setfile["Last EndTime"] = session_end
+        current_sf_setfile["Race Lap"] = lap_number
+        
+        # JSONファイルに保存
+        with open("./data/racelive.json", "w", encoding="utf-8") as f:
+            json.dump(current_sf_setfile, f, ensure_ascii=False, indent=4)
+
+
     st.markdown("---")
-    st.caption("livego.pyをバックグラウンドで実行してください")
-    st.code("poetry run python src/racelive/livego.py")
+    st.markdown("### プロセス制御")
+    
+    # livego.pyのプロセス状態をチェック
+    def is_livego_running():
+        """livego.pyが実行中かチェック"""
+        try:
+            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                try:
+                    cmdline = proc.info['cmdline']
+                    if cmdline and any('livego.py' in arg for arg in cmdline):
+                        return True, proc.info['pid']
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+            return False, None
+        except Exception:
+            return False, None
+    
+    is_running, pid = is_livego_running()
+    
+    # プロセス状態表示
+    if is_running:
+        st.success(f"🟢 livego.py 実行中 (PID: {pid})")
+        
+        # 停止ボタン
+        if st.button("🛑 livego.py 停止", key="stop_livego"):
+            try:
+                if pid:
+                    os.kill(pid, signal.SIGTERM)
+                    st.success("livego.pyを停止しました")
+                    time.sleep(1)
+                    st.rerun()
+            except Exception as e:
+                st.error(f"停止エラー: {e}")
+    else:
+        st.info("⚪ livego.py 停止中")
+        
+        # 開始ボタン
+        if st.button("▶️ livego.py 開始", key="start_livego"):
+            try:
+                # バックグラウンドでlivego.pyを起動
+                subprocess.Popen([
+                    sys.executable, 
+                    "src/racelive/livego.py"
+                ], 
+                cwd=os.getcwd(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+                )
+                st.success("livego.pyを開始しました")
+                time.sleep(1)
+                st.rerun()
+            except Exception as e:
+                st.error(f"開始エラー: {e}")
+
+    # st.markdown("---")
+    # st.caption("または、ターミナルでバックグラウンド実行")
+    # st.code("poetry run python src/racelive/livego.py")

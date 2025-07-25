@@ -76,41 +76,41 @@ def seconds_to_laptime(sec):
 
 
 # -------------------------- サイドバー設定 ------------------------------------------------------------------------
-st.sidebar.markdown("## Session Info")
+st.sidebar.markdown("## タイムデータ表示")
 
-# 選択されたセッションのインデックスを取得
-session_name = st.sidebar.selectbox("セッション選択", session_list, index=0)
-selected_session_index = session_list.index(session_name)
+# # 選択されたセッションのインデックスを取得
+# session_name = st.sidebar.selectbox("セッション選択", session_list, index=0)
+# selected_session_index = session_list.index(session_name)
 
-# 選択されたセッションの詳細を取得
-time_path = sf_setfile["Time Path"]
-lastevent = sf_setfile["Last Event"]
-selected_session = sf_setfile["Session"][selected_session_index]
-session_date = selected_session["Date"]
-session_start = selected_session["StartTime"]
-session_end = selected_session["EndTime"]
-race_lap = st.session_state.get("race_lap", race_lap)
+# # 選択されたセッションの詳細を取得
+# time_path = sf_setfile["Time Path"]
+# lastevent = sf_setfile["Last Event"]
+# selected_session = sf_setfile["Session"][selected_session_index]
+# session_date = selected_session["Date"]
+# session_start = selected_session["StartTime"]
+# session_end = selected_session["EndTime"]
+# race_lap = st.session_state.get("race_lap", race_lap)
 
-# サイドバーに日時、開始時間、終了時間を表示
-st.sidebar.markdown(f"**日時:** {session_date}")
-st.sidebar.markdown(f"**開始時間:** {session_start}")
-st.sidebar.markdown(f"**終了時間:** {session_end}")
-st.sidebar.markdown(f"**レースラップ:** {race_lap}")
-st.sidebar.write("")
+# # サイドバーに日時、開始時間、終了時間を表示
+# st.sidebar.markdown(f"**日時:** {session_date}")
+# st.sidebar.markdown(f"**開始時間:** {session_start}")
+# st.sidebar.markdown(f"**終了時間:** {session_end}")
+# st.sidebar.markdown(f"**レースラップ:** {race_lap}")
+# st.sidebar.write("")
 
-# セッション選択ボタンの処理
-if st.sidebar.button("セッション選択"):
-    # JSONファイルのデータを更新
-    sf_setfile["Last Session"] = selected_session_index
-    sf_setfile["Last StartTime"] = session_start
-    sf_setfile["Last EndTime"] = session_end
+# # セッション選択ボタンの処理
+# if st.sidebar.button("セッション選択"):
+#     # JSONファイルのデータを更新
+#     sf_setfile["Last Session"] = selected_session_index
+#     sf_setfile["Last StartTime"] = session_start
+#     sf_setfile["Last EndTime"] = session_end
     
-    # JSONファイルに保存
-    with open("./data/racelive.json", "w", encoding="utf-8") as f:
-        json.dump(sf_setfile, f, ensure_ascii=False, indent=4)
+#     # JSONファイルに保存
+#     with open("./data/racelive.json", "w", encoding="utf-8") as f:
+#         json.dump(sf_setfile, f, ensure_ascii=False, indent=4)
 
-st.sidebar.write("")
-st.sidebar.write("")
+# st.sidebar.write("")
+# st.sidebar.write("")
 
 
 # -------------------------- 空データフレーム事前設定 ------------------------------------------------------------------------
@@ -311,27 +311,26 @@ if "sector_display_df5" not in st.session_state:
     st.session_state.sector_display_df5 = empty_time_df.copy()
 
 
-
 # -------------------------- 最上部気象データ表示エリア ------------------------------------------------------------
-with st.container(border=True):
-    # 気象データ表示エリア列設定
-    col_w1, col_w2, col_w3, col_w4, col_w5, col_w6, col_w7, col_w8 = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
 
-    with col_w1: st.write("")
-    with col_w2: st.write("")
-    with col_w3: st.write("")
-    with col_w4: st.write("")
-    with col_w5: st.write("")
-    with col_w6: st.write("")
-    with col_w7: st.write("")
-    with col_w8: st.write("")
+# with st.container(border=True):
+#     # 気象データ表示エリア列設定
+#     col_w1, col_w2, col_w3, col_w4, col_w5, col_w6, col_w7, col_w8 = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
 
+#     with col_w1: st.write("")
+#     with col_w2: st.write("")
+#     with col_w3: st.write("")
+#     with col_w4: st.write("")
+#     with col_w5: st.write("")
+#     with col_w6: st.write("")
+#     with col_w7: st.write("")
+#     with col_w8: st.write("")
 
 
 # -------------------------- ライブタイムデータ表示エリア ------------------------------------------------------------
 
 # スクレイピング開始・停止をトグルで管理
-livego_practice = st.sidebar.toggle("Live開始/停止", key="livego_practice")
+livego_practice = st.sidebar.toggle("タイム表示/停止", key="livego_practice")
 
 
 col_p1, col_p2, col_p3 = st.columns([1, 1, 1])

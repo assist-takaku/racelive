@@ -116,6 +116,10 @@ def main():
                 session_endtime = sf_setfile["Last EndTime"]
                 session_date = datetime.now().strftime("%Y/%m/%d")
                 
+                # オフセット値を取得（デフォルト値を設定）
+                offset_start = sf_setfile.get("Offset Start", 1)  # デフォルト1分
+                offset_end = sf_setfile.get("Offset End", 3)      # デフォルト3分
+                
                 # データ準備
                 datal = Datalist(sf_setfile["Last Category"])
                 teamlist, mk, mk2 = datal.teamlist()
@@ -127,6 +131,7 @@ def main():
                 print(f"カテゴリ: {category}")
                 print(f"セッション: {session_name}")
                 print(f"時間: {session_starttime} - {session_endtime}")
+                print(f"オフセット: 開始-{offset_start}分, 終了+{offset_end}分")
                 print(f"保存先: {save_path}")
                 
                 # 時間計算
@@ -137,10 +142,9 @@ def main():
                     session_end_str = f"{session_date} {session_endtime}:00"
                     session_end_dt = datetime.strptime(session_end_str, "%Y/%m/%d %H:%M:%S")
                     
-                    # 開始時間の1分前に設定
-                    scraping_start_dt = session_start_dt - timedelta(minutes=1)
-                    # 終了時間の3分後に設定
-                    scraping_end_dt = session_end_dt + timedelta(minutes=3)
+                    # 設定されたオフセット値を使用
+                    scraping_start_dt = session_start_dt - timedelta(minutes=offset_start)
+                    scraping_end_dt = session_end_dt + timedelta(minutes=offset_end)
                     
                     session_start = int(time.mktime(scraping_start_dt.timetuple()))
                     session_end = int(time.mktime(scraping_end_dt.timetuple()))
