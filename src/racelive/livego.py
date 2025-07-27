@@ -19,6 +19,7 @@ from pathlib import Path
 import time
 import json
 import threading
+import schedule
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -82,7 +83,8 @@ def main():
     print("Ctrl+C で終了")
     
     scraping_active = False
-    scraper_thread = None
+    scheduler = schedule.Scheduler()
+    scheduled_job = None
     
     while True:
         try:
@@ -142,12 +144,16 @@ def main():
                     session_end_str = f"{session_date} {session_endtime}:00"
                     session_end_dt = datetime.strptime(session_end_str, "%Y/%m/%d %H:%M:%S")
                     
-                    # 設定されたオフセット値を使用
+                    # 設定されたオフセット値を使用してスクレイピング期間を計算
                     scraping_start_dt = session_start_dt - timedelta(minutes=offset_start)
                     scraping_end_dt = session_end_dt + timedelta(minutes=offset_end)
                     
-                    session_start = int(time.mktime(scraping_start_dt.timetuple()))
-                    session_end = int(time.mktime(scraping_end_dt.timetuple()))
+                    # scraper.livetimeにはオフセット前の元の時間を使用
+                    original_session_start_timestamp = int(time.mktime(session_start_dt.timetuple()))
+                    original_session_end_timestamp = int(time.mktime(session_end_dt.timetuple()))
+                    
+                    # 終了時間はオフセット後の時間を使用
+                    scraping_end_timestamp = int(time.mktime(scraping_end_dt.timetuple()))
                     
                     now = datetime.now()
                     
@@ -157,55 +163,69 @@ def main():
                         time.sleep(5)
                         continue
                     
+                    # スクレイピング実行関数
+                    def run_scraping():
+                        try:
+                            print("📡 スクレイピング開始")
+                            print(f"📅 セッション時間: {session_start_dt} - {session_end_dt}")
+                            print(f"🕒 実際のスクレイピング期間: {scraping_start_dt} - {scraping_end_dt}")
+                            update_scraping_status(True, "実行中")
+                            
+                            # timedataとして元のsession_start_dtの情報を保持
+                            timedata = session_start_dt
+                            
+                            scraper = Racelivescraper(url, df0, category_index, sector, car_no_list, driver_list, mk, save_path)
+                            # 開始時間：オフセット前、終了時間：オフセット後
+                            scraper.livetime(original_session_start_timestamp, scraping_end_timestamp)
+                            print("✅ スクレイピング完了")
+                            update_scraping_status(False, "完了")
+                        except Exception as e:
+                            print(f"❌ スクレイピングエラー: {e}")
+                            traceback.print_exc()
+                            update_scraping_status(False, f"エラー: {str(e)}")
+                    
+                    # オフセット後のscraping_start_dtの時間にスケジュール
+                    schedule_time = scraping_start_dt.strftime("%H:%M")
+                    scheduled_job = scheduler.every().day.at(schedule_time).do(run_scraping)
+                    
                     if now < scraping_start_dt:
                         remaining_time = scraping_start_dt - now
-                        print(f"⏰ 開始まで: {remaining_time}")
-                        update_scraping_status(True, f"開始まで: {remaining_time}")
+                        print(f"⏰ スクレイピング開始まで: {remaining_time}")
+                        print(f"📅 スケジュール設定: {schedule_time}に実行（オフセット後の時刻）")
+                        update_scraping_status(True, f"開始予定: {schedule_time}")
                     else:
-                        print("✅ スクレイピング実行中")
-                        update_scraping_status(True, "実行中")
+                        print("▶️ スクレイピング時間中 - 即座に実行")
+                        run_scraping()
                     
                 except ValueError as e:
                     print(f"時刻の形式エラー: {e}")
-                    session_start = int(time.mktime(datetime.now().timetuple()))
-                    session_end = int(time.mktime((datetime.now() + timedelta(minutes=2)).timetuple()))
+                    original_session_start_timestamp = int(time.mktime(datetime.now().timetuple()))
+                    scraping_end_timestamp = int(time.mktime((datetime.now() + timedelta(minutes=2)).timetuple()))
                 
-                # スクレイピング実行（別スレッド）
-                def run_scraping():
-                    try:
-                        scraper = Racelivescraper(url, df0, category_index, sector, car_no_list, driver_list, mk, save_path)
-                        timedata = scraper.livetime(session_start, session_end)
-                        print("スクレイピング完了")
-                        update_scraping_status(False, "完了")
-                    except Exception as e:
-                        print(f"スクレイピングエラー: {e}")
-                        traceback.print_exc()
-                        update_scraping_status(False, f"エラー: {str(e)}")
-                
-                scraper_thread = threading.Thread(target=run_scraping, daemon=True)
-                scraper_thread.start()
                 scraping_active = True
                 
             elif not should_scraping and scraping_active:
                 # スクレイピング停止
-                print("スクレイピング停止指示を受信")
+                print("🛑 スクレイピング停止指示を受信")
+                if scheduled_job:
+                    scheduler.cancel_job(scheduled_job)
+                    scheduled_job = None
                 scraping_active = False
                 update_scraping_status(False, "手動停止")
             
-            # スレッドが終了していたら状態をリセット
-            if scraping_active and scraper_thread and not scraper_thread.is_alive():
-                scraping_active = False
-                print("スクレイピングスレッド終了")
+            # スケジューラーを実行
+            if scraping_active:
+                scheduler.run_pending()
             
             time.sleep(1)  # 1秒間隔でチェック
             
         except KeyboardInterrupt:
-            print("\n終了します...")
+            print("\n🔚 終了します...")
             if scraping_active:
                 update_scraping_status(False, "プログラム終了")
             break
         except Exception as e:
-            print(f"予期しないエラー: {e}")
+            print(f"❌ 予期しないエラー: {e}")
             traceback.print_exc()
             time.sleep(5)
 
