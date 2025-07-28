@@ -78,6 +78,9 @@ from racelive import const
 st.set_page_config(**const.SET_PAGE_CONFIG)
 st.markdown(const.HIDE_ST_STYLE,unsafe_allow_html=True)
 
+# 自動リフレッシュ機能（30秒間隔で制御ファイルの状態をチェック）
+st_autorefresh(interval=30000, key="auto_refresh")
+
 
 # -------------------------- 設定用Jsonファイルの読み込み -----------------------------------------------------
 sf_setfile = json.load(open("./data/racelive.json", "r", encoding="utf-8"))
@@ -229,9 +232,36 @@ with setup:
     # 設定保存ボタン
     with col_s7:
         with st.container(border=True):
-            st.write("")
+            # カスタムCSSでボタンスタイルを設定
+            st.markdown("""
+                <style>
+                div.stButton > button:first-child {
+                    background-color: #28a745;
+                    color: white;
+                    border: 2px solid #28a745;
+                    border-radius: 8px;
+                    padding: 0.5rem 1rem;
+                    font-weight: bold;
+                    font-size: 16px;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                    height: 3rem;
+                }
+                div.stButton > button:first-child:hover {
+                    background-color: #218838;
+                    border-color: #218838;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                }
+                div.stButton > button:first-child:active {
+                    transform: translateY(0px);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            
             # プッシュボタン
-            if st.button("データ保存"):
+            if st.button("💾 データ保存", key="save_data_button"):
                 # JSONデータを更新
                 sf_setfile["Time Path"] = st.session_state.get("livetime_file_path", time_path)
                 sf_setfile["weather Path"] = st.session_state.get("weather_file_path", weather_Path)
@@ -282,19 +312,18 @@ with setup:
                 # カスタムCSSでメッセージボックスのサイズを調整
                 st.markdown(
                     """
-                    <style>
-                    .custom-success {
-                        background-color: #d4edda;
-                        border: 1px solid #c3e6cb;
+                    <div style="
+                        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+                        border: 2px solid #28a745;
                         color: #155724;
                         padding: 8px 12px;
-                        border-radius: 4px;
-                        margin: 4px 0;
+                        border-radius: 8px;
+                        margin: 8px 0;
                         font-size: 14px;
                         text-align: center;
-                    }
-                    </style>
-                    <div class="custom-success">
+                        font-weight: bold;
+                        box-shadow: 0 2px 6px rgba(40, 167, 69, 0.2);
+                    ">
                         ✅ 変更を保存しました。
                     </div>
                     """,
@@ -519,27 +548,83 @@ with st.sidebar:
     # 制御ファイルのパス
     control_file = "./data/scraping_control.json"
     
+    # livego.pyのプロセス状態をチェック
+    def is_livego_running():
+        """livego.pyが実行中かチェック"""
+        try:
+            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                try:
+                    cmdline = proc.info['cmdline']
+                    if cmdline and any('livego.py' in arg for arg in cmdline):
+                        return True, proc.info['pid']
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+            return False, None
+        except Exception:
+            return False, None
+    
+    # 実際のプロセス状態を確認
+    is_process_running, process_pid = is_livego_running()
+    
     # 現在の状態を読み込み
     if os.path.exists(control_file):
         try:
             with open(control_file, "r", encoding="utf-8") as f:
                 control_data = json.load(f)
-            current_status = control_data.get("scraping", False)
+            file_status = control_data.get("scraping", False)
             status_message = control_data.get("message", "")
             last_update = control_data.get("timestamp", "")
         except:
-            current_status = False
+            file_status = False
             status_message = ""
             last_update = ""
     else:
-        current_status = False
+        file_status = False
         status_message = ""
         last_update = ""
     
+    # 実際のプロセス状態と制御ファイルの状態を比較して、正確な状態を決定
+    if is_process_running and file_status:
+        current_status = True
+        status_display = "🟢 実行中"
+    elif is_process_running and not file_status:
+        current_status = False
+        status_display = "🟡 プロセス実行中（制御ファイル停止状態）"
+        # 制御ファイルを実際の状態に合わせて更新
+        control_data = {
+            "scraping": False,
+            "timestamp": datetime.now().isoformat(),
+            "message": "プロセス実行中だが制御ファイルは停止状態",
+            "command_from": "main.py"
+        }
+        os.makedirs(os.path.dirname(control_file), exist_ok=True)
+        with open(control_file, "w", encoding="utf-8") as f:
+            json.dump(control_data, f, ensure_ascii=False, indent=2)
+    elif not is_process_running and file_status:
+        current_status = False
+        status_display = "🟠 制御ファイル実行状態（プロセス停止中）"
+        # 制御ファイルを実際の状態に合わせて更新
+        control_data = {
+            "scraping": False,
+            "timestamp": datetime.now().isoformat(),
+            "message": "プロセス停止中だが制御ファイルは実行状態",
+            "command_from": "main.py"
+        }
+        os.makedirs(os.path.dirname(control_file), exist_ok=True)
+        with open(control_file, "w", encoding="utf-8") as f:
+            json.dump(control_data, f, ensure_ascii=False, indent=2)
+    else:
+        current_status = False
+        if status_message and ("完了" in status_message or "終了" in status_message):
+            status_display = "🔵 完了"
+        else:
+            status_display = "🔴 停止中"
+    
     # 状態表示
-    status_text = "🟢 実行中" if current_status else "🔴 停止中"
-    st.write(f"**現在の状態**: {status_text}")
-    # if status_message:
+    st.write(f"**現在の状態**: {status_display}")
+    
+    # 制御ファイルの最終更新時刻をチェックして、外部からの変更を検知
+    # if status_message and "livego.py" in status_message:
     #     st.caption(f"詳細: {status_message}")
     # if last_update:
     #     st.caption(f"更新時刻: {last_update[:19]}")
@@ -563,6 +648,19 @@ with st.sidebar:
             st.success("✅ スクレイピング開始指示を送信")
         else:
             st.info("⏹️ スクレイピング停止指示を送信")
+    
+    # livego.pyからの状態変更を検知してトグルを同期
+    if os.path.exists(control_file):
+        try:
+            with open(control_file, "r", encoding="utf-8") as f:
+                current_control_data = json.load(f)
+            # livego.pyからの変更の場合、ページを自動更新してトグル状態を同期
+            if (current_control_data.get("status_from") == "livego.py" and 
+                current_control_data.get("scraping", False) != scraping_status):
+                time.sleep(1)  # 少し待機してからリロード
+                st.rerun()
+        except:
+            pass
 
     # 最新のJSONファイルを再読み込みしてセッションリストを更新
     current_sf_setfile = json.load(open("./data/racelive.json", "r", encoding="utf-8"))
@@ -582,7 +680,7 @@ with st.sidebar:
     lap_number = selected_session["Lap"]
 
     # サイドバーに日時、開始時間、終了時間を表示
-    st.sidebar.markdown(f"**日時:** {session_date}")
+    # st.sidebar.markdown(f"**日時:** {session_date}")
     st.sidebar.markdown(f"**開始時間:** {session_start}")
     st.sidebar.markdown(f"**終了時間:** {session_end}")
     st.sidebar.markdown(f"**周回数:** {lap_number}")
@@ -615,26 +713,12 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### プロセス制御")
     
-    # livego.pyのプロセス状態をチェック
-    def is_livego_running():
-        """livego.pyが実行中かチェック"""
-        try:
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                try:
-                    cmdline = proc.info['cmdline']
-                    if cmdline and any('livego.py' in arg for arg in cmdline):
-                        return True, proc.info['pid']
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    continue
-            return False, None
-        except Exception:
-            return False, None
-    
-    is_running, pid = is_livego_running()
+    # 既に取得済みのプロセス状態を使用
+    is_running, pid = is_process_running, process_pid
     
     # プロセス状態表示
     if is_running:
-        st.success(f"🟢 livego.py 実行中 (PID: {pid})")
+        st.success(f"🟢 livego.py 実行中")
         
         # 停止ボタン
         if st.button("🛑 livego.py 停止", key="stop_livego"):

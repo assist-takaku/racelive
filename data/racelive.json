@@ -4,8 +4,8 @@
     "Last Circuit": 1,
     "Last Event": "2025 Round 6&7",
     "Last Session": 0,
-    "Last StartTime": "13:38",
-    "Last EndTime": "13:39",
+    "Last StartTime": "16:25",
+    "Last EndTime": "16:26",
     "Race Lap": "10",
     "Time Path": "/Users/koichi-book/Documents/RaceLive Data/LapTime/2025/Rd6&7",
     "ambient ID": "51094",
@@ -1319,17 +1319,17 @@
     ],
     "Session": [
         {
-            "Name": "Run Test1",
-            "Date": "7/27",
-            "StartTime": "13:38",
-            "EndTime": "13:39",
+            "Name": "FP1",
+            "Date": "7/28",
+            "StartTime": "16:25",
+            "EndTime": "16:26",
             "Lap": "10"
         },
         {
-            "Name": "SF Test2",
-            "Date": "7/25",
-            "StartTime": "14:42",
-            "EndTime": "14:43",
+            "Name": "FP2",
+            "Date": "7/18",
+            "StartTime": "14:50",
+            "EndTime": "15:50",
             "Lap": "35"
         },
         {
