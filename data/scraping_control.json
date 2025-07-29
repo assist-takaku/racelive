@@ -1,6 +1,6 @@
 {
   "scraping": false,
-  "timestamp": "2025-07-28T16:30:41.316390",
+  "timestamp": "2025-07-29T10:36:13.281412",
   "message": "プロセス実行中だが制御ファイルは停止状態",
   "command_from": "main.py"
 }

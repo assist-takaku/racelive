@@ -85,7 +85,7 @@ def main():
     scraping_active = False
     scheduler = schedule.Scheduler()
     scheduled_job = None
-    
+
     while True:
         try:
             # 制御ファイルをチェック
@@ -126,8 +126,8 @@ def main():
                 datal = Datalist(sf_setfile["Last Category"])
                 teamlist, mk, mk2 = datal.teamlist()
                 driver_list, car_no_list = datal.driverlist()
-                df0 = datal.data_db(race_lap)
-                
+                df0 = datal.data_db(race_lap, session_name)
+
                 save_path = os.path.join(time_path, f"{lastevent}_{session_name}")
                 
                 print(f"カテゴリ: {category}")

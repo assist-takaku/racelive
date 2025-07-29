@@ -19,6 +19,7 @@ class Datalist:
         self.category_index = cat
         self.sf_setfile = json.load(open("./data/racelive.json", "r", encoding="utf-8"))
         self.list_team = self.sf_setfile["Category"][self.category_index]["Team"]
+        self.list_cat = self.sf_setfile["Category"][self.category_index]["Name"]
 
         # データベース用リストを作成
         self.team_data = []
@@ -72,9 +73,10 @@ class Datalist:
 
 
     # -------------------------- ライブデータ用データベースファイル作成 --------------------------------------------------
-    def data_db(self, racelap):
+    def data_db(self, racelap, sess):
 
         self.racelap = racelap
+        self.sess = sess
 
         # 参加ドライバーリストの空のデータベースを作成
         d_id = []
@@ -82,6 +84,16 @@ class Datalist:
             for s in range(1, int(self.racelap) + 1):
                 c_id = str(i) + str("_") + str(s)
                 d_id.append(c_id)
+
+        category = []
+        for n in (self.car_no_list):
+            for s in range(1, int(self.racelap) + 1):
+                category.append(self.list_cat)
+
+        ses_name = []
+        for n in (self.car_no_list):
+            for s in range(1, int(self.racelap) + 1):
+                ses_name.append(self.sess)
 
         c_no = []
         for i in (self.car_no_list):
@@ -113,7 +125,7 @@ class Datalist:
             for s in range(1, int(self.racelap) + 1):
                 lap.append(s)
 
-        df_list = {"ID": d_id, "CarNo": c_no, "Driver": dr1, "Driver Name": dr2, "Maker": mk, "Lap": lap}
+        df_list = {"ID": d_id, "Category": category, "Session": ses_name, "CarNo": c_no, "Driver": dr1, "Driver Name": dr2, "Maker": mk, "Lap": lap}
         df0 = pd.DataFrame.from_dict(df_list)
 
         df0["Pos"] = ""

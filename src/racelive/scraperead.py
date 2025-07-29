@@ -950,11 +950,6 @@ class Racelivescraper:
         return self.df0
 
 
-    def livetime_replay(self, file):
-        self.file = file
-
-
-
     # ---------------------- ライブタイム・ウェザーメソッド ---------------------------------------------------------------
     def livetime_weather(self, session_start, session_end, ambient_id, ambient_read_key, wea_path):
         # セッション開始・終了時間を設定
@@ -1894,8 +1889,18 @@ class Racelivescraper:
         return self.df0
 
 
-    def livetime_replay(self, file):
-        self.file = file
+
+# ---------------------- ライブタイム・リプレイメソッド ---------------------------------------------------------------
+class livetime_replay:
+    def __init__(self, df0, cat, sector, car_no_list, driver_list, mk, save_path):
+
+        self.df0 = df0
+        self.cat = cat
+        self.sector = sector
+        self.car_no_list = car_no_list
+        self.driver_list = driver_list
+        self.mk = mk
+        self.save_path = save_path
 
 
 

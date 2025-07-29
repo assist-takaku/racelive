@@ -134,10 +134,10 @@ with setup:
     # タイトルメッセージ表示
     st.write("# Super Formula Race Live SetUp")
     st.write("")
-
-    # カテゴリ選択ボックス
+    
     col_s1, col_s2, col_s3, col_s4, col_s5, col_s6, col_s7 = st.columns([1, 1, 1, 1, 1, 1, 1])
 
+    # カテゴリ選択ボックス
     with col_s1:
         with st.container(border=True):
             # カテゴリ選択ボックス
