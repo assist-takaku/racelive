@@ -20,11 +20,12 @@ import traceback
 
 # -------------------------- レース・ライブタイミング・データ読み込み ----------------------------------------------------
 class Racelivescraper:
-    def __init__(self, url, df0, cat, sector, car_no_list, driver_list, mk, save_path):
+    def __init__(self, url, df0, cat, ses, sector, car_no_list, driver_list, mk, save_path):
 
         self.url = url
         self.df0 = df0
         self.cat = cat
+        self.ses = ses
         self.sector = sector
         self.car_no_list = car_no_list
         self.driver_list = driver_list
@@ -47,7 +48,7 @@ class Racelivescraper:
 
         self.df1 = pd.DataFrame()
         columns1 = [
-            "ID", "CarNo", "Driver", "Maker", "Lap", "Position", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed",
+            "ID", "Category", "Session", "CarNo", "Driver", "Maker", "Lap", "Position", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed",
             "LapTime (min)", "LapTime", "Elapsed Time", "Tire", "Pit", "Pit In No", "Track Condition",
             "Weather", "Flag", "Remaining Time", "Sampling Time", "Ambient Time", "Ambient Temp", "Ambient K Type",
             "Ambient Track", "Ambient Humidity", "Ambient Pressure", "Weather Time", "Weather Temp", "Weather Humidity",
@@ -67,6 +68,7 @@ class Racelivescraper:
                     # Super Formula スクレイピング
                     if self.cat == 0:
 
+                        cat_name = "SF"
                         # SF スクレイピング
                         for i in (self.car_no_list):
                             c_no = ("c" + str(i))
@@ -304,6 +306,8 @@ class Racelivescraper:
 
                                 listdata1 = []
                                 listdata1.append(id_no)
+                                listdata1.append(cat_name)
+                                listdata1.append(self.ses)
                                 listdata1.append(car_no)
                                 listdata1.append(driver_name)
                                 listdata1.append(maker_name)
@@ -939,7 +943,6 @@ class Racelivescraper:
                 time.sleep(0.2)
 
             elif ftime >= self.finish_time:
-                # セッション終了時の処理
                 # セッション終了時の処理
                 self.df0.to_csv(self.save_path + "_livetime.csv", index=True, encoding="shift-jis")
                 self.df1.to_csv(self.save_path + "_livetime_replay.csv", index=True, encoding="shift-jis")
@@ -1901,6 +1904,17 @@ class livetime_replay:
         self.driver_list = driver_list
         self.mk = mk
         self.save_path = save_path
+
+    def sf(self):
+
+        self.df1 = pd.DataFrame()
+        columns1 = [
+            "ID", "Category", "Session", "CarNo", "Driver", "Maker", "Lap", "Position", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed",
+            "LapTime (min)", "LapTime", "Elapsed Time", "Tire", "Pit", "Pit In No", "Track Condition",
+            "Weather", "Flag", "Remaining Time", "Sampling Time", "Ambient Time", "Ambient Temp", "Ambient K Type",
+            "Ambient Track", "Ambient Humidity", "Ambient Pressure", "Weather Time", "Weather Temp", "Weather Humidity",
+            "Weather WindSpeed", "Weather WindDirection", "Weather Air Pressure"]
+
 
 
 

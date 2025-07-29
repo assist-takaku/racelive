@@ -173,8 +173,8 @@ def main():
                             
                             # timedataとして元のsession_start_dtの情報を保持
                             timedata = session_start_dt
-                            
-                            scraper = Racelivescraper(url, df0, category_index, sector, car_no_list, driver_list, mk, save_path)
+
+                            scraper = Racelivescraper(url, df0, category_index, session_name, sector, car_no_list, driver_list, mk, save_path)
                             # 開始時間：オフセット前、終了時間：オフセット後
                             scraper.livetime(original_session_start_timestamp, scraping_end_timestamp)
                             print("✅ スクレイピング完了")

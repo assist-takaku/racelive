@@ -4,8 +4,8 @@
     "Last Circuit": 1,
     "Last Event": "2025 Round 6&7",
     "Last Session": 0,
-    "Last StartTime": "10:33",
-    "Last EndTime": "10:34",
+    "Last StartTime": "11:00",
+    "Last EndTime": "11:02",
     "Race Lap": "35",
     "Time Path": "/Users/koichi-book/Documents/RaceLive Data/LapTime/2025/Rd6&7",
     "ambient ID": "51094",
@@ -1321,8 +1321,8 @@
         {
             "Name": "FP1",
             "Date": "7/29",
-            "StartTime": "10:33",
-            "EndTime": "10:34",
+            "StartTime": "11:00",
+            "EndTime": "11:02",
             "Lap": "35"
         },
         {
