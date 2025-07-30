@@ -49,7 +49,11 @@ sector = st.session_state.get("sector", 4)
 # カテゴリに基づいてチームリストを取得
 datal = Datalist(lastcategory)
 teamlist, mk, mk2 = datal.teamlist()
-df0 = datal.data_db(race_lap)
+# セッション情報を取得
+selected_session_index = sf_setfile.get("Last Session", 0)
+selected_session = sf_setfile["Session"][selected_session_index]
+session_name = selected_session["Name"]
+df0 = datal.data_db(race_lap, session_name)
 driver_list, car_no_list = datal.driverlist()
 
 weather_Path = sf_setfile["weather Path"]

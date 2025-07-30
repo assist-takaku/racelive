@@ -1895,27 +1895,102 @@ class Racelivescraper:
 
 # ---------------------- ライブタイム・リプレイメソッド ---------------------------------------------------------------
 class livetime_replay:
-    def __init__(self, df0, cat, sector, car_no_list, driver_list, mk, save_path):
+    def __init__(self, data, df0, cat, sector, car_no_list, driver_list, mk):
 
+        self.data = data
         self.df0 = df0
         self.cat = cat
         self.sector = sector
         self.car_no_list = car_no_list
         self.driver_list = driver_list
         self.mk = mk
-        self.save_path = save_path
 
     def sf(self):
+        """
+        SF RePlayモード: アップロードされたCSVデータを時間差で順次処理
+        """
+        num_cars = len(self.car_no_list)
+        total_rows = len(self.data)  # テストCSV 総行数 1341
 
-        self.df1 = pd.DataFrame()
-        columns1 = [
-            "ID", "Category", "Session", "CarNo", "Driver", "Maker", "Lap", "Position", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed",
-            "LapTime (min)", "LapTime", "Elapsed Time", "Tire", "Pit", "Pit In No", "Track Condition",
-            "Weather", "Flag", "Remaining Time", "Sampling Time", "Ambient Time", "Ambient Temp", "Ambient K Type",
-            "Ambient Track", "Ambient Humidity", "Ambient Pressure", "Weather Time", "Weather Temp", "Weather Humidity",
-            "Weather WindSpeed", "Weather WindDirection", "Weather Air Pressure"]
+        current_row = 0
+        previous_sampling_time = None
+
+        while current_row < total_rows:
+            # 現在の行から車両数分のデータを取得
+            end_row = min(current_row + num_cars, total_rows)
+            
+            current_sampling_time = None
+
+            for i, car_no in enumerate(self.car_no_list):
+                if current_row + i < total_rows:
+                    row_data = self.data.iloc[current_row + i]
+                    if 'Sampling Time' in self.data.columns:
+                        current_sampling_time = row_data['Sampling Time']
+                        
+                        id_no = row_data.get("ID")
+                        pos = row_data.get("Position")
+                        sec1 = row_data.get("Sec 1")
+                        sec2 = row_data.get("Sec 2")
+                        sec3 = row_data.get("Sec 3")
+                        sec4 = row_data.get("Sec 4")
+                        speed = row_data.get("Speed")
+                        laptime = row_data.get("LapTime (min)")
+                        laptime_sec = row_data.get("LapTime")
+                        tire = row_data.get("Tyre")
+                        pit = row_data.get("Pit")
+                        ptn = row_data.get("Pit In No")
+                        trackcondi = row_data.get("Track Condition")
+                        weather_name = row_data.get("Weather")
+                        flag_name = row_data.get("Flag")
+                        remaining = row_data.get("Remaining Time")
+
+                        self.df0.loc[(self.df0["ID"] == id_no), "Pos"] = pos
+                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 1"] = sec1
+                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 2"] = sec2
+                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 3"] = sec3
+                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 4"] = sec4
+                        self.df0.loc[(self.df0["ID"] == id_no), "Speed"] = speed
+                        self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
+                        self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
+                        self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
+                        self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                        self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
+                        self.df0.loc[(self.df0["ID"] == id_no), "Track Condition"] = trackcondi
+                        self.df0.loc[(self.df0["ID"] == id_no), "Weather"] = weather_name
+                        self.df0.loc[(self.df0["ID"] == id_no), "Flag"] = flag_name
+                        self.df0.loc[(self.df0["ID"] == id_no), "Remaining Time"] = remaining
+
+                        self.df0.to_csv("./data/livetime.csv", index=True, encoding="shift-jis")
+
+                        # 最初の行でない場合は時間差で待機
+                        if previous_sampling_time is not None:
+                            current_seconds = time_string_to_seconds(str(current_sampling_time))
+                            previous_seconds = time_string_to_seconds(str(previous_sampling_time))
+                            time_diff = abs(current_seconds - previous_seconds)
+                            time.sleep(time_diff)
+                        
+                        previous_sampling_time = current_sampling_time
+                    else:
+                        # 列名が異なる場合の確認
+                        break
+            
+            current_row = end_row
 
 
+
+
+def time_string_to_seconds(time_str):
+    """時刻文字列（MM:SS.s形式）を秒数に変換"""
+    try:
+        if ":" in time_str:
+            parts = time_str.split(":")
+            minutes = int(parts[0])
+            seconds = float(parts[1])
+            return minutes * 60 + seconds
+        else:
+            return float(time_str)
+    except:
+        return 0.0
 
 
 def ambientupdate_data(ambient_id, ambient_read_key):

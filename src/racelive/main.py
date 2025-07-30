@@ -164,8 +164,15 @@ with setup:
                     try:
                         # アップロードされたCSVファイルをDataFrameとして読み込む
                         df_uploaded = pd.read_csv(uploaded_file, encoding="shift-jis")
+                        # セッションステートに保存
+                        st.session_state["uploaded_file_data"] = df_uploaded
+                        st.success(f"✅ CSVファイルを読み込みました ({len(df_uploaded)}行)")
                     except Exception as e:
                         st.error(f"ファイルの読み込みに失敗しました: {e}")
+                        st.session_state["uploaded_file_data"] = None
+                else:
+                    # ファイルがアップロードされていない場合は None に設定
+                    st.session_state["uploaded_file_data"] = None
 
             # 選択されたカテゴリに基づいてURLを更新
             if "categoryurl" not in st.session_state or st.session_state.get("last_selected_category") != category_name:
@@ -179,6 +186,9 @@ with setup:
             # DataFrame に変換してセッションステートに保存
             df_team = pd.DataFrame(teamlist)
             st.session_state["df_team"] = df_team
+            st.session_state["car_no_list"] = car_no_list
+            st.session_state["driver_list"] = driver_list
+            st.session_state["mk"] = mk
 
     # イベント名入力
     with col_s2:
@@ -630,21 +640,83 @@ with st.sidebar:
     #     st.caption(f"更新時刻: {last_update[:19]}")
     
     # トグルで制御
-    scraping_status = st.toggle("スクレイピング制御", value=current_status, key="scraping_control")
+    is_sf_replay_mode = st.session_state.get("category_name") == "SF RePlay"
+    toggle_label = "リプレイ実行" if is_sf_replay_mode else "スクレイピング制御"
+    scraping_status = st.toggle(toggle_label, value=current_status, key="scraping_control")
     
     # 状態が変更された場合にファイルに保存
     if scraping_status != current_status:
-        control_data = {
-            "scraping": scraping_status,
-            "timestamp": datetime.now().isoformat(),
-            "command_from": "main.py"
-        }
+        # SF RePlayモードかどうかをチェック
+        is_sf_replay_mode = st.session_state.get("category_name") == "SF RePlay"
+        
+        if is_sf_replay_mode and scraping_status:
+            # SF RePlayモードでONにした場合
+            uploaded_file_data = st.session_state.get("uploaded_file_data")
+            if uploaded_file_data is not None:
+                try:
+                    from racelive.scraperead import livetime_replay
+                    
+                    # リプレイ処理用のパラメータを取得
+                    selected_category_index = category_list.index(st.session_state.get("category_name", category_list[0]))
+                    sector = st.session_state.get("sector", 4)
+                    teamlist, mk, mk2 = datal.teamlist()
+                    driver_list, car_no_list = datal.driverlist()
+                    
+                    # リプレイ処理を実行
+                    replay_processor = livetime_replay(
+                        data=uploaded_file_data,
+                        df0=datal.data_db(race_lap, "SF RePlay"),
+                        cat=selected_category_index,
+                        sector=sector,
+                        car_no_list=car_no_list,
+                        driver_list=driver_list,
+                        mk=mk,
+                    )
+                    
+                    # SF RePlayの処理を実行
+                    replay_processor.sf()
+                    
+                    st.success("✅ SF RePlay処理が完了しました")
+                    
+                    # 処理完了後、制御ファイルを停止状態に設定
+                    control_data = {
+                        "scraping": False,
+                        "timestamp": datetime.now().isoformat(),
+                        "message": "SF RePlay処理完了",
+                        "command_from": "main.py"
+                    }
+                    
+                except Exception as e:
+                    st.error(f"❌ SF RePlay処理エラー: {e}")
+                    control_data = {
+                        "scraping": False,
+                        "timestamp": datetime.now().isoformat(),
+                        "message": f"SF RePlayエラー: {str(e)}",
+                        "command_from": "main.py"
+                    }
+            else:
+                st.error("❌ CSVファイルをアップロードしてください")
+                control_data = {
+                    "scraping": False,
+                    "timestamp": datetime.now().isoformat(),
+                    "message": "CSVファイルが未アップロード",
+                    "command_from": "main.py"
+                }
+        else:
+            # 通常のスクレイピング制御
+            control_data = {
+                "scraping": scraping_status,
+                "timestamp": datetime.now().isoformat(),
+                "command_from": "main.py"
+            }
         
         os.makedirs(os.path.dirname(control_file), exist_ok=True)
         with open(control_file, "w", encoding="utf-8") as f:
             json.dump(control_data, f, ensure_ascii=False, indent=2)
         
-        if scraping_status:
+        if is_sf_replay_mode and scraping_status:
+            pass  # SF RePlayの場合はメッセージを上で表示済み
+        elif scraping_status:
             st.success("✅ スクレイピング開始指示を送信")
         else:
             st.info("⏹️ スクレイピング停止指示を送信")
