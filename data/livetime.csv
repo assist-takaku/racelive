@@ -1,7 +1,7 @@
 ,ID,Category,Session,CarNo,Driver,Driver Name,Maker,Lap,Pos,Sec 1,Sec 2,Sec 3,Sec 4,Speed,LapTime (min),LapTime,E Time,Tyre,Pit,Pit In No,Track Condition,Wwather,Flag,Remaining Time,Sampling Time,Ambient Time,Ambient Temp,Ambient K Type,Ambient Track,Ambient Humidity,Ambient Pressure,Weather Time,Weather Temp,Weather Humidity,Weather WindSpeed,Weather WindDirection,Weather Air Pressure,Weather
 0,1_1,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,1,1,23.049,26.748,37.766,,298.34,01:27.6,87.563,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 1,1_2,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,2,1,21.152,26.23,37.841,,295.08,01:25.2,85.223,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-2,1_3,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,3,1,21.225,,,,295.08,01:25.2,85.223,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+2,1_3,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,3,1,21.225,26.11,37.898,,299.16,01:25.2,85.233,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 3,1_4,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 4,1_5,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 5,1_6,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -36,7 +36,7 @@
 34,1_35,SF RePlay,SF RePlay,1,#  1 TUB,坪井翔,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 35,3_1,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,1,12,25.264,28.337,39.395,,305.08,01:33.0,92.996,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 36,3_2,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,2,10,21.206,26.955,38.165,,300.0,01:26.3,86.326,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-37,3_3,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,3,10,21.392,,,,300.0,01:26.3,86.326,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+37,3_3,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,3,10,21.392,26.885,38.316,,300.0,01:26.6,86.593,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 38,3_4,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 39,3_5,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 40,3_6,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -71,7 +71,7 @@
 69,3_35,SF RePlay,SF RePlay,3,#  3 KEN,山下健太,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 70,4_1,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,1,16,25.973,29.198,39.189,,313.04,01:34.4,94.36,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 71,4_2,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,2,16,21.377,27.451,38.783,,304.22,01:27.6,87.611,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-72,4_3,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,3,15,21.663,,,,304.22,01:27.6,87.611,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+72,4_3,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,3,15,21.663,27.332,38.16,,311.23,01:27.2,87.155,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 73,4_4,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 74,4_5,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 75,4_6,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -106,7 +106,7 @@
 104,4_35,SF RePlay,SF RePlay,4,#  4 OSU,ザック・オサリバン,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 105,5_1,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,1,7,24.375,27.462,38.736,,299.16,01:30.6,90.573,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 106,5_2,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,2,7,21.921,27.15,38.136,,296.7,01:27.2,87.207,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-107,5_3,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,3,7,21.314,,,,296.7,01:27.2,87.207,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+107,5_3,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,3,7,21.314,26.544,38.164,,297.52,01:26.0,86.022,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 108,5_4,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 109,5_5,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 110,5_6,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -141,7 +141,7 @@
 139,5_35,SF RePlay,SF RePlay,5,#  5 MAK,牧野任祐,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 140,6_1,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,1,2,22.87,26.796,38.483,,295.89,01:28.1,88.149,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 141,6_2,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,2,2,21.282,26.426,37.791,,297.52,01:25.5,85.499,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-142,6_3,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,3,2,21.233,,,,297.52,01:25.5,85.499,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+142,6_3,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,3,2,21.233,26.192,37.873,,299.99,01:25.3,85.298,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 143,6_4,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 144,6_5,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 145,6_6,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -176,7 +176,7 @@
 174,6_35,SF RePlay,SF RePlay,6,#  6 OTA,太田格之進,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 175,7_1,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,1,8,24.637,27.591,38.688,,309.45,01:30.9,90.916,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 176,7_2,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,2,6,21.145,26.589,38.087,,301.67,01:25.8,85.821,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-177,7_3,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,3,6,21.27,,,,301.67,01:25.8,85.821,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+177,7_3,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,3,6,21.27,26.527,38.124,,301.67,01:25.9,85.921,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 178,7_4,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 179,7_5,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 180,7_6,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -210,8 +210,8 @@
 208,7_34,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,34,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 209,7_35,SF RePlay,SF RePlay,7,#  7 KOB,小林可夢偉,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 210,8_1,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,1,20,24.99,27.748,44.054,,158.35,01:36.8,96.792,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
-211,8_2,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,2,20,56.929,27.376,,,158.35,01:36.8,96.792,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-212,8_3,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+211,8_2,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,2,20,56.929,27.376,37.688,,301.67,02:02.0,121.993,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+212,8_3,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,3,19,21.077,26.435,,,301.67,02:02.0,121.993,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 213,8_4,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 214,8_5,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 215,8_6,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -244,7 +244,7 @@
 242,8_33,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,33,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 243,8_34,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,34,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 244,8_35,SF RePlay,SF RePlay,8,#  8 FUK,福住仁嶺,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-245,10_1,SF RePlay,SF RePlay,10,# 10 JUJ,野田樹潤,HONDA,1,22,25.629,29.173,59.543,,257.75,01:54.3,114.345,,,Pit,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+245,10_1,SF RePlay,SF RePlay,10,# 10 JUJ,野田樹潤,HONDA,1,22,25.629,29.173,59.543,,257.75,01:54.3,114.345,,,Pit,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 246,10_2,SF RePlay,SF RePlay,10,# 10 JUJ,野田樹潤,HONDA,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 247,10_3,SF RePlay,SF RePlay,10,# 10 JUJ,野田樹潤,HONDA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 248,10_4,SF RePlay,SF RePlay,10,# 10 JUJ,野田樹潤,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -281,7 +281,7 @@
 279,10_35,SF RePlay,SF RePlay,10,# 10 JUJ,野田樹潤,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 280,12_1,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,1,19,26.425,29.147,40.893,,287.23,01:36.5,96.465,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 281,12_2,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,2,19,21.405,26.975,38.431,,303.37,01:26.8,86.811,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-282,12_3,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+282,12_3,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,3,18,21.453,27.159,38.585,,307.69,01:27.2,87.197,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 283,12_4,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 284,12_5,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 285,12_6,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -316,7 +316,7 @@
 314,12_35,SF RePlay,SF RePlay,12,# 12 ATS,三宅淳詞,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 315,14_1,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,1,15,25.461,28.804,39.292,,305.94,01:33.6,93.557,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 316,14_2,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,2,14,21.867,27.445,38.59,,277.63,01:27.9,87.902,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-317,14_3,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+317,14_3,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,3,14,21.664,27.166,38.405,,300.83,01:27.2,87.235,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 318,14_4,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 319,14_5,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 320,14_6,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -351,7 +351,7 @@
 349,14_35,SF RePlay,SF RePlay,14,# 14 OSH,大嶋和也,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 350,15_1,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,1,5,23.867,27.252,38.497,,307.69,01:29.6,89.616,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 351,15_2,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,2,5,21.253,26.774,38.05,,298.34,01:26.1,86.077,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-352,15_3,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,3,5,21.323,,,,298.34,01:26.1,86.077,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+352,15_3,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,3,5,21.323,26.58,37.919,,298.34,01:25.8,85.822,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 353,15_4,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 354,15_5,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 355,15_6,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -386,7 +386,7 @@
 384,15_35,SF RePlay,SF RePlay,15,# 15 IWA,岩佐歩夢,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 385,16_1,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,1,11,25.021,28.335,39.509,,305.08,01:32.9,92.865,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 386,16_2,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,2,11,21.595,27.305,38.637,,297.52,01:27.5,87.537,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-387,16_3,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,3,11,21.484,,,,297.52,01:27.5,87.537,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+387,16_3,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,3,11,21.484,26.536,38.492,,297.52,01:26.5,86.512,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 388,16_4,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 389,16_5,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 390,16_6,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -421,7 +421,7 @@
 419,16_35,SF RePlay,SF RePlay,16,# 16 NOJ,野尻智紀,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 420,19_1,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,1,14,25.231,28.749,39.534,,308.57,01:33.5,93.514,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 421,19_2,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,2,12,21.317,27.319,38.914,,297.52,01:27.6,87.55,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-422,19_3,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,3,12,21.497,,,,297.52,01:27.6,87.55,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+422,19_3,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,3,12,21.497,26.643,38.362,,303.37,01:26.5,86.502,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 423,19_4,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 424,19_5,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 425,19_6,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -455,8 +455,8 @@
 453,19_34,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,34,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 454,19_35,SF RePlay,SF RePlay,19,# 19 RAS,オリバー・ラスムッセン,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 455,20_1,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,1,22,26.157,28.854,66.43299999999999,,164.88,02:01.4,121.444,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-456,20_2,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,2,21,66.803,,,,164.88,02:01.4,121.444,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-457,20_3,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+456,20_2,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,2,21,66.803,27.908,38.009,,291.1,02:12.7,132.72,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
+457,20_3,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,3,21,21.445,,,,291.1,02:12.7,132.72,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 458,20_4,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 459,20_5,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 460,20_6,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -491,7 +491,7 @@
 489,20_35,SF RePlay,SF RePlay,20,# 20 TAK,高星明誠,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 490,28_1,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,1,13,25.812,28.48,39.188,,304.22,01:33.5,93.48,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 491,28_2,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,2,13,21.717,27.387,38.796,,301.67,01:27.9,87.9,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-492,28_3,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+492,28_3,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,3,13,21.551,26.91,38.515,,298.34,01:27.0,86.976,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 493,28_4,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 494,28_5,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 495,28_6,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -526,7 +526,7 @@
 524,28_35,SF RePlay,SF RePlay,28,# 28 KOT,小高一斗,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 525,29_1,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,1,17,26.579,29.008,39.789,,310.34,01:35.4,95.376,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 526,29_2,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,2,17,21.219,27.171,38.585,,301.67,01:27.0,86.975,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-527,29_3,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+527,29_3,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,3,16,21.64,27.187,38.561,,306.81,01:27.4,87.388,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 528,29_4,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 529,29_5,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 530,29_6,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -561,7 +561,7 @@
 559,29_35,SF RePlay,SF RePlay,29,# 29 TAI,平良響,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 560,37_1,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,1,9,24.481,27.801,38.965,,300.0,01:31.2,91.247,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 561,37_2,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,2,8,21.477,27.314,38.081,,303.37,01:26.9,86.872,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-562,37_3,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,3,8,21.371,,,,303.37,01:26.9,86.872,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+562,37_3,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,3,8,21.371,26.711,37.995,,302.52,01:26.1,86.077,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 563,37_4,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 564,37_5,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 565,37_6,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -596,7 +596,7 @@
 594,37_35,SF RePlay,SF RePlay,37,# 37 FEN,サッシャ・フェネストラズ,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 595,38_1,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,1,10,24.659,27.969,39.102,,301.67,01:31.7,91.73,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 596,38_2,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,2,9,21.41,27.279,38.156,,301.67,01:26.8,86.845,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-597,38_3,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,3,9,21.47,,,,301.67,01:26.8,86.845,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+597,38_3,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,3,9,21.47,26.735,38.271,,300.83,01:26.5,86.476,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 598,38_4,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 599,38_5,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 600,38_6,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -631,7 +631,7 @@
 629,38_35,SF RePlay,SF RePlay,38,# 38 SAK,阪口晴南,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 630,39_1,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,1,3,23.24,26.961,38.173,,306.81,01:28.4,88.374,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 631,39_2,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,2,3,21.235,26.975,37.831,,299.99,01:26.0,86.041,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-632,39_3,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,3,3,21.221,,,,299.99,01:26.0,86.041,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+632,39_3,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,3,3,21.221,26.388,38.033,,302.52,01:25.6,85.642,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 633,39_4,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 634,39_5,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 635,39_6,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -666,7 +666,7 @@
 664,39_35,SF RePlay,SF RePlay,39,# 39 OYU,大湯都史樹,TOYOTA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 665,50_1,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,1,18,26.806,29.079,40.046,,303.37,01:35.9,95.931,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 666,50_2,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,2,18,21.346,26.879,38.544,,307.69,01:26.8,86.769,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-667,50_3,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+667,50_3,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,3,17,21.502,27.325,38.697,,297.52,01:27.5,87.524,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 668,50_4,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 669,50_5,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 670,50_6,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -701,7 +701,7 @@
 699,50_35,SF RePlay,SF RePlay,50,# 50 KOI,小出峻,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 700,64_1,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,1,4,23.508,27.189,38.554,,300.0,01:29.3,89.251,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
 701,64_2,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,2,4,21.224,26.458,37.999,,309.45,01:25.7,85.681,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-702,64_3,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,3,4,21.215,,,,309.45,01:25.7,85.681,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+702,64_3,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,3,4,21.215,26.574,37.971,,303.37,01:25.8,85.76,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 703,64_4,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 704,64_5,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 705,64_6,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -735,8 +735,8 @@
 733,64_34,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,34,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 734,64_35,SF RePlay,SF RePlay,64,# 64 REN,佐藤蓮,HONDA,35,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 735,65_1,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,1,6,24.105,27.085,39.377,,298.34,01:30.6,90.567,,,,,Dry     ,,green_on,40 LAPS TO GO,,,,,,,,,,,,,,Fine
-736,65_2,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,2,15,21.764,26.748,42.622,,298.34,01:31.1,91.134,,,Pit,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
-737,65_3,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+736,65_2,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,2,19,21.764,26.748,42.622,,159.76,01:31.1,91.134,,,,,Dry     ,,green_on,39 LAPS TO GO,,,,,,,,,,,,,,Fine
+737,65_3,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,3,20,57.822,27.541,,,159.76,01:31.1,91.134,,,,,Dry     ,,green_on,38 LAPS TO GO,,,,,,,,,,,,,,Fine
 738,65_4,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 739,65_5,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 740,65_6,SF RePlay,SF RePlay,65,# 65 FRA,イゴール・オオムラ・フラガ,HONDA,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,

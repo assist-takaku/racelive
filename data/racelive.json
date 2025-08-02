@@ -4,15 +4,15 @@
     "Last Circuit": 1,
     "Last Event": "2025 Round 6&7",
     "Last Session": 0,
-    "Last StartTime": "11:00",
-    "Last EndTime": "11:02",
+    "Last StartTime": "16:13",
+    "Last EndTime": "16:14",
     "Race Lap": "35",
     "Time Path": "/Users/koichi-book/Documents/RaceLive Data/LapTime/2025/Rd6&7",
     "ambient ID": "51094",
     "ambient readKey": "35059f455d307f2d",
     "weather Path": "/Users/koichi-book/Documents/RaceLive Data/Weather/download.txt",
     "Offset Start": 1,
-    "Offset End": 1,
+    "Offset End": 2,
     "Category": [
         {
             "Name": "SF",
@@ -1320,9 +1320,9 @@
     "Session": [
         {
             "Name": "FP1",
-            "Date": "7/29",
-            "StartTime": "11:00",
-            "EndTime": "11:02",
+            "Date": "7/30",
+            "StartTime": "16:13",
+            "EndTime": "16:14",
             "Lap": "35"
         },
         {

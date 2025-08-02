@@ -71,8 +71,8 @@ except Exception:
 
 def seconds_to_laptime(sec):
     """秒(float)を mm:ss.000 形式の文字列に変換"""
-    if not np.isfinite(sec):
-        return np.nan
+    if pd.isna(sec) or not np.isfinite(sec):
+        return ""
     m = int(sec // 60)
     s = sec % 60
     return f"{m}:{s:06.3f}"
@@ -639,6 +639,8 @@ if livego_practice:
                 # LapTime列をmm:ss.000形式に変換
                 if "LapTime" in timesummary1.columns:
                     timesummary1["LapTime"] = timesummary1["LapTime"].apply(seconds_to_laptime)
+                    # NaNや"None"を空文字列に置換
+                    timesummary1["LapTime"] = timesummary1["LapTime"].replace(["None", "nan", np.nan], "")
                 # Sec列（Sec 1, Sec 2, Sec 3, Sec 4）は小数点以下3位
                 for sec_col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"]:
                     if sec_col in timesummary1.columns:
@@ -669,6 +671,8 @@ if livego_practice:
                 # LapTime列をmm:ss.000形式に変換
                 if "LapTime" in timesummary2.columns:
                     timesummary2["LapTime"] = timesummary2["LapTime"].apply(seconds_to_laptime)
+                    # NaNや"None"を空文字列に置換
+                    timesummary2["LapTime"] = timesummary2["LapTime"].replace(["None", "nan", np.nan], "")
                 # Sec列（Sec 1, Sec 2, Sec 3, Sec 4）は小数点以下3位
                 for sec_col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"]:
                     if sec_col in timesummary2.columns:
@@ -1024,6 +1028,8 @@ if livego_practice:
                 # LapTime列をmm:ss.000形式に変換
                 if "LapTime" in drivertime_df2_2.columns:
                     drivertime_df2_2["LapTime"] = pd.to_numeric(drivertime_df2_2["LapTime"], errors="coerce").apply(seconds_to_laptime)
+                    # NaNや"None"を空文字列に置換
+                    drivertime_df2_2["LapTime"] = drivertime_df2_2["LapTime"].replace(["None", "nan", np.nan], "")
             else:
                 drivertime_df2_2 = pd.DataFrame(columns=dr_display_columns2)
 
@@ -1080,6 +1086,8 @@ if livego_practice:
                 # LapTime列をmm:ss.000形式に変換
                 if "LapTime" in drivertime_df3_2.columns:
                     drivertime_df3_2["LapTime"] = pd.to_numeric(drivertime_df3_2["LapTime"], errors="coerce").apply(seconds_to_laptime)
+                    # NaNや"None"を空文字列に置換
+                    drivertime_df3_2["LapTime"] = drivertime_df3_2["LapTime"].replace(["None", "nan", np.nan], "")
             else:
                 drivertime_df3_2 = pd.DataFrame(columns=dr_display_columns2)
 
@@ -1136,6 +1144,8 @@ if livego_practice:
                 # LapTime列をmm:ss.000形式に変換
                 if "LapTime" in drivertime_df4_2.columns:
                     drivertime_df4_2["LapTime"] = pd.to_numeric(drivertime_df4_2["LapTime"], errors="coerce").apply(seconds_to_laptime)
+                    # NaNや"None"を空文字列に置換
+                    drivertime_df4_2["LapTime"] = drivertime_df4_2["LapTime"].replace(["None", "nan", np.nan], "")
             else:
                 drivertime_df4_2 = pd.DataFrame(columns=dr_display_columns2)
 

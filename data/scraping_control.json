@@ -1,6 +1,6 @@
 {
   "scraping": false,
-  "timestamp": "2025-07-30T13:35:49.639612",
-  "message": "プロセス実行中だが制御ファイルは停止状態",
+  "timestamp": "2025-08-02T08:51:34.837428",
+  "message": "CSVファイルが未アップロード",
   "command_from": "main.py"
 }
