@@ -118,8 +118,110 @@ if st.session_state.get("is_sf_replay", False):
     col_play1, col_play2, col_play3 = st.sidebar.columns(3)
     with col_play1:
         if st.button("▶️", key="play", help="再生"):
-            st.session_state["replay_status"] = "playing"
-            st.sidebar.success("再生中...")
+            # リプレイ処理を実行
+            uploaded_file_data = st.session_state.get("uploaded_file_data")
+            if uploaded_file_data is not None:
+                try:
+                    from racelive.scraperead import livetime_replay
+                    
+                    # リプレイ処理用のパラメータを取得
+                    sf_setfile = json.load(open("./data/racelive.json", "r", encoding="utf-8"))
+                    category_list = [n["Name"] for n in sf_setfile["Category"]]
+                    selected_category_index = category_list.index(st.session_state.get("category_name", category_list[0]))
+                    sector = st.session_state.get("sector", 4)
+                    
+                    # カテゴリに基づいてチームリストを取得
+                    datal = Datalist(selected_category_index)
+                    teamlist, mk, mk2 = datal.teamlist()
+                    driver_list, car_no_list = datal.driverlist()
+                    
+                    # リプレイ処理を実行
+                    replay_processor = livetime_replay(
+                        data=uploaded_file_data,
+                        df0=datal.data_db(sf_setfile["Race Lap"], "SF RePlay"),
+                        cat=selected_category_index,
+                        sector=sector,
+                        car_no_list=car_no_list,
+                        driver_list=driver_list,
+                        mk=mk,
+                    )
+                    
+                    # SF RePlayの処理を実行
+                    replay_processor.sf()
+                    
+                    # リプレイ処理完了後、データを表示するためにCSVファイルを読み込み
+                    csv_path = "./data/livetime.csv"
+                    if os.path.exists(csv_path):
+                        try:
+                            # CSVファイルを読み込んでデータフレームを更新
+                            race_df1 = pd.read_csv(csv_path, encoding="shift-jis")
+                            
+                            # レース Columns1設定を再定義
+                            if sector == 3:
+                                race_columns1 = ["Pos", "CarNo", "Driver Name", "Lap", "Gap", "Diff", 
+                                                "LapTime", "Sec 1", "Sec 2", "Sec 3", "Speed", "Best LapTime",]
+                            else:
+                                race_columns1 = ["Pos", "CarNo", "Driver Name", "Lap", "Gap", "Diff", 
+                                                "LapTime", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed", "Best LapTime",]
+                            
+                            # LapTime, Sec, Speed列を数値型に変換（エラー時はNaN）
+                            num_cols = ["LapTime", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed"]
+                            for col in num_cols:
+                                if col in race_df1.columns:
+                                    race_df1[col] = pd.to_numeric(race_df1[col], errors="coerce")
+                            
+                            # レースメインのデータフレーム作成
+                            if "CarNo" in race_df1.columns and "LapTime" in race_df1.columns:
+                                # CarNoごとに最新のラップタイムを取得
+                                latest_df = race_df1.groupby("CarNo").last().reset_index()
+                                # LapTimeの昇順でソート
+                                latest_df = latest_df.sort_values("LapTime", ascending=True, na_position='last')
+                                # 順位を設定
+                                latest_df["Pos"] = range(1, len(latest_df) + 1)
+                                
+                                # レース用の列に合わせてデータフレームを整形
+                                race_summary1 = latest_df.reindex(columns=race_columns1).head(max_pos).fillna("")
+                                
+                                # LapTime列をmm:ss.000形式に変換
+                                if "LapTime" in race_summary1.columns:
+                                    race_summary1["LapTime"] = pd.to_numeric(race_summary1["LapTime"], errors="coerce").apply(seconds_to_laptime)
+                                
+                                # Best LapTimeの計算（各CarNoの最速ラップタイム）
+                                if "Best LapTime" in race_summary1.columns:
+                                    best_laptimes = race_df1.groupby("CarNo")["LapTime"].min()
+                                    for idx, row in race_summary1.iterrows():
+                                        car_no = row["CarNo"]
+                                        if car_no in best_laptimes.index and pd.notnull(best_laptimes[car_no]):
+                                            race_summary1.at[idx, "Best LapTime"] = seconds_to_laptime(best_laptimes[car_no])
+                                
+                                # Sec列（Sec 1, Sec 2, Sec 3, Sec 4）は小数点以下3位
+                                for sec_col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"]:
+                                    if sec_col in race_summary1.columns:
+                                        race_summary1[sec_col] = pd.to_numeric(race_summary1[sec_col], errors="coerce").map(lambda x: f"{x:.3f}" if pd.notnull(x) else "")
+                                
+                                # Speed列は小数点以下2位
+                                if "Speed" in race_summary1.columns:
+                                    race_summary1["Speed"] = pd.to_numeric(race_summary1["Speed"], errors="coerce").map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+                                
+                                # セッションステートに表示用データフレームを更新
+                                st.session_state.display_race_df0 = race_summary1
+                            
+                            st.session_state["replay_status"] = "playing"
+                            st.sidebar.success("✅ SF RePlay処理が完了し、データを表示しました")
+                            
+                        except Exception as data_error:
+                            st.session_state["replay_status"] = "playing"
+                            st.sidebar.warning(f"⚠️ SF RePlay処理は完了しましたが、データ読み込みエラー: {data_error}")
+                    else:
+                        st.session_state["replay_status"] = "playing"
+                        st.sidebar.warning("⚠️ SF RePlay処理は完了しましたが、livetime.csvが見つかりません")
+                    
+                except Exception as e:
+                    st.session_state["replay_status"] = "error"
+                    st.sidebar.error(f"❌ SF RePlay処理エラー: {e}")
+            else:
+                st.session_state["replay_status"] = "no_file"
+                st.sidebar.error("❌ CSVファイルをアップロードしてください")
     with col_play2:
         if st.button("⏸️", key="pause", help="一時停止"):
             st.session_state["replay_status"] = "paused"
@@ -292,8 +394,57 @@ with col_race4:
 
 # -------------------------- CSVファイルの自動リフレッシュ -----------------------------------------------------
 
+# SF RePlayモードの場合は、アップロードされたCSVファイルからデータを取得
+if st.session_state.get("is_sf_replay", False) and st.session_state.get("uploaded_file_data") is not None:
+    # アップロードされたCSVファイルを使用
+    race_df1 = st.session_state["uploaded_file_data"].copy()
 
-if livego_race:
+    # LapTime, Sec, Speed列を数値型に変換（エラー時はNaN）
+    num_cols = ["LapTime", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed"]
+    for col in num_cols:
+        if col in race_df1.columns:
+            race_df1[col] = pd.to_numeric(race_df1[col], errors="coerce")
+
+    # レースメインのデータフレーム作成
+    if "CarNo" in race_df1.columns and "LapTime" in race_df1.columns:
+        # CarNoごとに最新のラップタイムを取得
+        latest_df = race_df1.groupby("CarNo").last().reset_index()
+        # LapTimeの昇順でソート
+        latest_df = latest_df.sort_values("LapTime", ascending=True, na_position='last')
+        # 順位を設定
+        latest_df["Pos"] = range(1, len(latest_df) + 1)
+        
+        # レース用の列に合わせてデータフレームを整形
+        race_summary1 = latest_df.reindex(columns=race_columns1).head(max_pos).fillna("")
+        
+        # LapTime列をmm:ss.000形式に変換
+        if "LapTime" in race_summary1.columns:
+            race_summary1["LapTime"] = pd.to_numeric(race_summary1["LapTime"], errors="coerce").apply(seconds_to_laptime)
+        
+        # Best LapTimeの計算（各CarNoの最速ラップタイム）
+        if "Best LapTime" in race_summary1.columns:
+            best_laptimes = race_df1.groupby("CarNo")["LapTime"].min()
+            for idx, row in race_summary1.iterrows():
+                car_no = row["CarNo"]
+                if car_no in best_laptimes.index and pd.notnull(best_laptimes[car_no]):
+                    race_summary1.at[idx, "Best LapTime"] = seconds_to_laptime(best_laptimes[car_no])
+        
+        # Sec列（Sec 1, Sec 2, Sec 3, Sec 4）は小数点以下3位
+        for sec_col in ["Sec 1", "Sec 2", "Sec 3", "Sec 4"]:
+            if sec_col in race_summary1.columns:
+                race_summary1[sec_col] = pd.to_numeric(race_summary1[sec_col], errors="coerce").map(lambda x: f"{x:.3f}" if pd.notnull(x) else "")
+        
+        # Speed列は小数点以下2位
+        if "Speed" in race_summary1.columns:
+            race_summary1["Speed"] = pd.to_numeric(race_summary1["Speed"], errors="coerce").map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+    else:
+        # データがない場合は空のデータフレームを作成
+        race_summary1 = pd.DataFrame({col: [""] * max_pos for col in race_columns1})
+
+    st.session_state.display_race_df0 = race_summary1
+
+elif livego_race:
+    # 通常モードでの自動リフレッシュ処理
     st_autorefresh(interval=5000, key="autorefresh")
     if os.path.exists(csv_path):
         mtime = os.path.getmtime(csv_path)
