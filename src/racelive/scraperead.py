@@ -48,10 +48,12 @@ class Racelivescraper:
 
         self.df1 = pd.DataFrame()
         columns1 = [
-            "ID", "Category", "Session", "CarNo", "Driver", "Maker", "Lap", "Position", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed",
-            "LapTime (min)", "LapTime", "Elapsed Time", "Tire", "Pit", "Pit In No", "Track Condition",
-            "Weather", "Flag", "Remaining Time", "Sampling Time", "Ambient Time", "Ambient Temp", "Ambient K Type",
-            "Ambient Track", "Ambient Humidity", "Ambient Pressure", "Weather Time", "Weather Temp", "Weather Humidity",
+            "ID", "Category", "Session", "CarNo", "Driver", "Maker", "Lap", "Pos", 
+            "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed", "LapTime (min)", "LapTime", "Gap", "Diff",
+            "Elapsed Time", "Tire", "Pit", "Pit In No", "Track Condition","Weather", "Flag", "Remaining Time", 
+            "Sampling Time", "Ambient Time", "Ambient Temp", "Ambient K Type",
+            "Ambient Track", "Ambient Humidity", "Ambient Pressure",
+            "Weather Time", "Weather Temp", "Weather Humidity",
             "Weather WindSpeed", "Weather WindDirection", "Weather Air Pressure"]
 
 
@@ -120,10 +122,16 @@ class Racelivescraper:
                                     lap = lapno
 
                                 # ギャップを取得
-                                gap = self.driver.find_element(By.ID, c_no + "_gap").text
+                                try:
+                                    gap = self.driver.find_element(By.ID, c_no + "_gap").text
+                                except Exception:
+                                    gap = None
 
                                 # デフを取得
-                                diff = self.driver.find_element(By.ID, c_no + "_diff").text
+                                try:
+                                    diff = self.driver.find_element(By.ID, c_no + "_diff").text
+                                except Exception:
+                                    diff = None
 
                                 # ラップタイムを取得
                                 try:
@@ -272,8 +280,11 @@ class Racelivescraper:
 
                                 self.df0.loc[(self.df0["ID"] == id_no), "Speed"] = speed
 
+                                self.df0.loc[(self.df0["ID"] == id_no), "Gap"] = gap
+                                self.df0.loc[(self.df0["ID"] == id_no), "Diff"] = diff
+
                                 self.df0.loc[(self.df0["ID"] == id_no), "Track Condition"] = trackcondi
-                                self.df0.loc[(self.df0["ID"] == id_no), "Wwather"] = weather_name
+                                self.df0.loc[(self.df0["ID"] == id_no), "Weather"] = weather_name
                                 self.df0.loc[(self.df0["ID"] == id_no), "Flag"] = flag_name
                                 self.df0.loc[(self.df0["ID"] == id_no), "Remaining Time"] = remaining
 
@@ -320,6 +331,8 @@ class Racelivescraper:
                                 listdata1.append(speed)
                                 listdata1.append(laptime)
                                 listdata1.append(laptime_sec)
+                                listdata1.append(gap)
+                                listdata1.append(diff)
                                 listdata1.append(etime)
                                 listdata1.append(tire)
                                 listdata1.append(pit)
@@ -407,10 +420,16 @@ class Racelivescraper:
                                     lap = lapno
 
                                 # ギャップを取得
-                                gap = self.driver.find_element(By.ID, c_no + "_gap").text
+                                try:
+                                    gap = self.driver.find_element(By.ID, c_no + "_gap").text
+                                except Exception:
+                                    gap = None
 
                                 # デフを取得
-                                diff = self.driver.find_element(By.ID, c_no + "_diff").text
+                                try:
+                                    diff = self.driver.find_element(By.ID, c_no + "_diff").text
+                                except Exception:
+                                    diff = None
 
                                 # ラップタイムを取得
                                 try:
@@ -594,6 +613,8 @@ class Racelivescraper:
 
                                 listdata1 = []
                                 listdata1.append(id_no)
+                                listdata1.append("SFL")  # Category
+                                listdata1.append(self.ses)  # Session
                                 listdata1.append(car_no)
                                 listdata1.append(driver_name)
                                 listdata1.append(maker_name)
@@ -606,6 +627,8 @@ class Racelivescraper:
                                 listdata1.append(speed)
                                 listdata1.append(laptime)
                                 listdata1.append(laptime_sec)
+                                listdata1.append(gap)
+                                listdata1.append(diff)
                                 listdata1.append(etime)
                                 listdata1.append(tire)
                                 listdata1.append(pit)
@@ -890,6 +913,8 @@ class Racelivescraper:
 
                                 listdata1 = []
                                 listdata1.append(id_no)
+                                listdata1.append("ST")  # Category
+                                listdata1.append(self.ses)  # Session
                                 listdata1.append(car_no)
                                 listdata1.append(driver_name)
                                 listdata1.append(maker_name)
@@ -902,6 +927,8 @@ class Racelivescraper:
                                 listdata1.append(speed)
                                 listdata1.append(laptime)
                                 listdata1.append(laptime_sec)
+                                listdata1.append("")  # gap（STでは提供されていない）
+                                listdata1.append("")  # diff（STでは提供されていない）
                                 listdata1.append(etime)
                                 listdata1.append(tire)
                                 listdata1.append(pit)
@@ -1911,70 +1938,78 @@ class livetime_replay:
         """
         num_cars = len(self.car_no_list)
         total_rows = len(self.data) 
+        print(f"Total rows in data: {total_rows}, Number of cars: {num_cars}")
 
         current_row = 0
         previous_sampling_time = None
 
         while current_row < total_rows:
-            # 現在の行から車両数分のデータを取得
-            end_row = min(current_row + num_cars, total_rows)
+            print(f"Processing row {current_row + 1}/{total_rows}")
             
-            current_sampling_time = None
-
-            for i, car_no in enumerate(self.car_no_list):
-                if current_row + i < total_rows:
-                    row_data = self.data.iloc[current_row + i]
-                    if 'Sampling Time' in self.data.columns:
-                        current_sampling_time = row_data['Sampling Time']
-                        
-                        id_no = row_data.get("ID")
-                        pos = row_data.get("Position")
-                        sec1 = row_data.get("Sec 1")
-                        sec2 = row_data.get("Sec 2")
-                        sec3 = row_data.get("Sec 3")
-                        sec4 = row_data.get("Sec 4")
-                        speed = row_data.get("Speed")
-                        laptime = row_data.get("LapTime (min)")
-                        laptime_sec = row_data.get("LapTime")
-                        tire = row_data.get("Tyre")
-                        pit = row_data.get("Pit")
-                        ptn = row_data.get("Pit In No")
-                        trackcondi = row_data.get("Track Condition")
-                        weather_name = row_data.get("Weather")
-                        flag_name = row_data.get("Flag")
-                        remaining = row_data.get("Remaining Time")
-
-                        self.df0.loc[(self.df0["ID"] == id_no), "Pos"] = pos
-                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 1"] = sec1
-                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 2"] = sec2
-                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 3"] = sec3
-                        self.df0.loc[(self.df0["ID"] == id_no), "Sec 4"] = sec4
-                        self.df0.loc[(self.df0["ID"] == id_no), "Speed"] = speed
-                        self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
-                        self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
-                        self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
-                        self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
-                        self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
-                        self.df0.loc[(self.df0["ID"] == id_no), "Track Condition"] = trackcondi
-                        self.df0.loc[(self.df0["ID"] == id_no), "Weather"] = weather_name
-                        self.df0.loc[(self.df0["ID"] == id_no), "Flag"] = flag_name
-                        self.df0.loc[(self.df0["ID"] == id_no), "Remaining Time"] = remaining
-
-                        self.df0.to_csv("./data/livetime.csv", index=True, encoding="shift-jis")
-                        # print(self.df0)
-                        # 最初の行でない場合は時間差で待機
-                        if previous_sampling_time is not None:
-                            current_seconds = time_string_to_seconds(str(current_sampling_time))
-                            previous_seconds = time_string_to_seconds(str(previous_sampling_time))
-                            time_diff = abs(current_seconds - previous_seconds)
-                            time.sleep(time_diff)
-                        
-                        previous_sampling_time = current_sampling_time
-                    else:
-                        # 列名が異なる場合の確認
-                        break
+            # 現在の行のデータを取得
+            row_data = self.data.iloc[current_row]
             
-            current_row = end_row
+            if 'Sampling Time' in self.data.columns:
+                current_sampling_time = row_data['Sampling Time']
+                
+                id_no = row_data.get("ID")
+                pos = row_data.get("Pos")  # "Position"ではなく"Pos"
+                sec1 = row_data.get("Sec 1")
+                sec2 = row_data.get("Sec 2")
+                sec3 = row_data.get("Sec 3")
+                sec4 = row_data.get("Sec 4")
+                speed = row_data.get("Speed")
+                laptime = row_data.get("LapTime (min)")
+                laptime_sec = row_data.get("LapTime")
+                tire = row_data.get("Tire")  # "Tyre"ではなく"Tire"
+                pit = row_data.get("Pit")
+                ptn = row_data.get("Pit In No")
+                trackcondi = row_data.get("Track Condition")
+                weather_name = row_data.get("Weather")
+                flag_name = row_data.get("Flag")
+                remaining = row_data.get("Remaining Time")
+
+                # データフレームを更新
+                self.df0.loc[(self.df0["ID"] == id_no), "Pos"] = pos
+                self.df0.loc[(self.df0["ID"] == id_no), "Sec 1"] = sec1
+                self.df0.loc[(self.df0["ID"] == id_no), "Sec 2"] = sec2
+                self.df0.loc[(self.df0["ID"] == id_no), "Sec 3"] = sec3
+                self.df0.loc[(self.df0["ID"] == id_no), "Sec 4"] = sec4
+                self.df0.loc[(self.df0["ID"] == id_no), "Speed"] = speed
+                self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
+                self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
+                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
+                self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
+                self.df0.loc[(self.df0["ID"] == id_no), "Track Condition"] = trackcondi
+                self.df0.loc[(self.df0["ID"] == id_no), "Weather"] = weather_name
+                self.df0.loc[(self.df0["ID"] == id_no), "Flag"] = flag_name
+                self.df0.loc[(self.df0["ID"] == id_no), "Remaining Time"] = remaining
+
+                # CSVファイルに保存
+                self.df0.to_csv("./data/livetime.csv", index=True, encoding="shift-jis")
+                
+                # 時間差で待機（異常な時間差は制限）
+                if previous_sampling_time is not None:
+                    current_seconds = time_string_to_seconds(str(current_sampling_time))
+                    previous_seconds = time_string_to_seconds(str(previous_sampling_time))
+                    time_diff = abs(current_seconds - previous_seconds)
+                    
+                    # 異常に大きな時間差（10秒以上）は制限
+                    if time_diff > 10:
+                        time_diff = 0.1  # 最小間隔
+                    elif time_diff < 0.01:
+                        time_diff = 0.01  # 最小間隔
+                    
+                    time.sleep(time_diff)
+                
+                previous_sampling_time = current_sampling_time
+            else:
+                # 列名が異なる場合の確認
+                print("Sampling Time列が見つかりません")
+                break
+            
+            current_row += 1
 
 
 
