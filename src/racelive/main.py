@@ -149,11 +149,29 @@ with setup:
             # 選択されたカテゴリをセッションステートに保存
             st.session_state["category_name"] = category_name
 
-            # SF RePlayモードかどうかをセッションステートに保存
-            st.session_state["is_sf_replay"] = (category_name == "SF RePlay")
-
             # 選択されたカテゴリのインデックスを取得
             selected_category_index = category_list.index(category_name)
+            # サイドバーに条件付きでfile_uploaderを表示
+            if category_name == "SF RePlay":
+                uploaded_file = st.file_uploader(
+                    label="",  # ラベルを空にする
+                    type="csv",
+                    label_visibility="collapsed"  # ラベルとスペースを非表示
+                )
+                # ファイルがアップロードされた場合
+                if uploaded_file is not None:
+                    try:
+                        # アップロードされたCSVファイルをDataFrameとして読み込む
+                        df_uploaded = pd.read_csv(uploaded_file, encoding="shift-jis")
+                        # セッションステートに保存
+                        st.session_state["uploaded_file_data"] = df_uploaded
+                        st.success(f"✅ CSVファイルを読み込みました ({len(df_uploaded)}行)")
+                    except Exception as e:
+                        st.error(f"ファイルの読み込みに失敗しました: {e}")
+                        st.session_state["uploaded_file_data"] = None
+                else:
+                    # ファイルがアップロードされていない場合は None に設定
+                    st.session_state["uploaded_file_data"] = None
 
             # 選択されたカテゴリに基づいてURLを更新
             if "categoryurl" not in st.session_state or st.session_state.get("last_selected_category") != category_name:

@@ -1910,7 +1910,7 @@ class livetime_replay:
         SF RePlayモード: アップロードされたCSVデータを時間差で順次処理
         """
         num_cars = len(self.car_no_list)
-        total_rows = len(self.data)  # テストCSV 総行数 1341
+        total_rows = len(self.data) 
 
         current_row = 0
         previous_sampling_time = None
@@ -1961,7 +1961,7 @@ class livetime_replay:
                         self.df0.loc[(self.df0["ID"] == id_no), "Remaining Time"] = remaining
 
                         self.df0.to_csv("./data/livetime.csv", index=True, encoding="shift-jis")
-
+                        # print(self.df0)
                         # 最初の行でない場合は時間差で待機
                         if previous_sampling_time is not None:
                             current_seconds = time_string_to_seconds(str(current_sampling_time))
