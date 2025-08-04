@@ -1,6 +1,6 @@
 {
-  "scraping": true,
-  "timestamp": "2025-08-04T17:44:54.238171",
-  "message": "SF RePlay処理開始",
+  "scraping": false,
+  "timestamp": "2025-08-04T18:11:24.160447",
+  "message": "プロセス停止中だが制御ファイルは実行状態",
   "command_from": "main.py"
 }

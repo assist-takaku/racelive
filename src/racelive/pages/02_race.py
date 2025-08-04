@@ -151,6 +151,10 @@ livego_race = st.sidebar.toggle("タイム表示/停止", key="livego_race")
 # Averageの倍率を取得
 average_multiplier = st.sidebar.number_input("Average", min_value=1.00, max_value=1.50, value=1.05, step=0.01)
 
+# データフレーム表示の展開/折りたたみ設定
+expanded = st.sidebar.checkbox("データフレーム全画面表示", value=False)
+dataframe_height = 810 if expanded else 405
+
 with st.container(border=True):
     # 統合されたデータフレーム用の列設定
     column_config = {
@@ -186,7 +190,7 @@ with st.container(border=True):
         use_container_width=True,
         hide_index=True,
         column_config=column_config,
-        height=810 
+        height=dataframe_height 
     )
 
 
