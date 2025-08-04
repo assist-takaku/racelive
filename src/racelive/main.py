@@ -708,10 +708,10 @@ with st.sidebar:
     # 状態が変更された場合にファイルに保存
     if is_sf_replay_mode:
         # SF RePlayモードの処理
-        # デバッグ情報（問題解決のため一時的に表示）
-        st.write(f"Debug: scraping_status={scraping_status}, previous_toggle_state={previous_toggle_state}")
-        st.write(f"Debug: replay_running={st.session_state.get('replay_running', False)}, replay_completed={st.session_state.get('replay_completed', False)}")
-        st.write(f"Debug: uploaded_file_data exists={st.session_state.get('uploaded_file_data') is not None}")
+        # # デバッグ情報（問題解決のため一時的に表示）
+        # st.write(f"Debug: scraping_status={scraping_status}, previous_toggle_state={previous_toggle_state}")
+        # st.write(f"Debug: replay_running={st.session_state.get('replay_running', False)}, replay_completed={st.session_state.get('replay_completed', False)}")
+        # st.write(f"Debug: uploaded_file_data exists={st.session_state.get('uploaded_file_data') is not None}")
         
         # トグル状態が変化した場合のみ処理実行（ファイルアップロード時の自動実行を防ぐ）
         if scraping_status and not previous_toggle_state and not st.session_state.get("replay_running", False) and not st.session_state.get("replay_completed", False):

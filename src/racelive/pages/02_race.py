@@ -103,18 +103,17 @@ def format_speed(value):
 st.sidebar.markdown("## タイムデータ表示")
 
 
-
-
-
 # -------------------------- 空データフレーム事前設定 --------------------------------------------------------------------------
 
 # レース Columns1設定
 if sector == 3:
     race_columns1 = ["Pos", "CarNo", "Driver Name", "Lap", "Gap", "Diff", 
-                    "LapTime", "Sec 1", "Sec 2", "Sec 3", "Speed", "Base Time"]
+                    "LapTime", "Sec 1", "Sec 2", "Sec 3", "Speed", "Base Time", 
+                    "PitIn1", "Stint1", "Avg1", "PitIn2", "Stint2", "Avg2", "PitIn3", "Stint3", "Avg3"]
 else:
     race_columns1 = ["Pos", "CarNo", "Driver Name", "Lap", "Gap", "Diff", 
-                    "LapTime", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed", "Base Time"]
+                    "LapTime", "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed", "Base Time", 
+                    "PitIn1", "Stint1", "Avg1", "PitIn2", "Stint2", "Avg2", "PitIn3", "Stint3", "Avg3"]
 
 
 # レース総合タイム・データ用
@@ -125,6 +124,17 @@ race_df0["Pos"] = range(1, max_pos + 1)
 race_df0["Lap"] = 0
 # Base Time列の初期値を空文字列に設定
 race_df0["Base Time"] = ""
+# PitIn列の初期値を空文字列に設定
+race_df0["PitIn1"] = ""
+race_df0["PitIn2"] = ""
+race_df0["PitIn3"] = ""
+# Stint列とAvg列の初期値を空文字列に設定
+race_df0["Stint1"] = ""
+race_df0["Avg1"] = ""
+race_df0["Stint2"] = ""
+race_df0["Avg2"] = ""
+race_df0["Stint3"] = ""
+race_df0["Avg3"] = ""
 
 
 # セッションステートにレース用データフレームを保持
@@ -138,25 +148,37 @@ if "display_race_df0" not in st.session_state:
 # スクレイピング開始・停止をトグルで管理
 livego_race = st.sidebar.toggle("タイム表示/停止", key="livego_race")
 
+# Averageの倍率を取得
+average_multiplier = st.sidebar.number_input("Average", min_value=1.00, max_value=1.50, value=1.05, step=0.01)
+
 with st.container(border=True):
     # 統合されたデータフレーム用の列設定
     column_config = {
-        "Pos": Column(label="Pos", width=50),
-        "CarNo": Column(label="Car No", width=70),
+        "Pos": Column(label="Pos", width=30),
+        "CarNo": Column(label="Car No", width=30),
         "Driver Name": Column(label="Driver", width=120),
-        "Lap": Column(label="Lap", width=60),
-        "Gap": Column(label="Gap", width=80),
-        "Diff": Column(label="Diff", width=80),
+        "Lap": Column(label="Lap", width=30),
+        "Gap": Column(label="Gap", width=50),
+        "Diff": Column(label="Diff", width=50),
         "LapTime": Column(label="Lap Time", width=100),
-        "Sec 1": Column(label="Sec 1", width=70),
-        "Sec 2": Column(label="Sec 2", width=70),
-        "Sec 3": Column(label="Sec 3", width=70),
-        "Speed": Column(label="Speed", width=70),
+        "Sec 1": Column(label="Sec 1", width=60),
+        "Sec 2": Column(label="Sec 2", width=60),
+        "Sec 3": Column(label="Sec 3", width=60),
+        "Speed": Column(label="Speed", width=60),
         "Base Time": Column(label="Base Time", width=100),
+        "PitIn1": Column(label="PitIn1", width=30),
+        "Stint1": Column(label="Stint1", width=30),
+        "Avg1": Column(label="Avg1", width=70),
+        "PitIn2": Column(label="PitIn2", width=30),
+        "Stint2": Column(label="Stint2", width=30),
+        "Avg2": Column(label="Avg2", width=70),
+        "PitIn3": Column(label="PitIn3", width=30),
+        "Stint3": Column(label="Stint3", width=30),
+        "Avg3": Column(label="Avg3", width=70),
     }
     # セクター4がある場合の追加設定
     if sector == 4:
-        column_config["Sec 4"] = Column(label="Sec 4", width=70)
+        column_config["Sec 4"] = Column(label="Sec 4", width=60)
     
     # 統合データフレームを作成
     st.dataframe(
@@ -164,7 +186,7 @@ with st.container(border=True):
         use_container_width=True,
         hide_index=True,
         column_config=column_config,
-        height=800 
+        height=810 
     )
 
 
@@ -285,6 +307,151 @@ if livego_race:
                             for idx in current_df.index:
                                 current_df.loc[idx, "Base Time"] = ""
                 
+                # PitIn情報を計算・更新（各CarNoのPit履歴を取得）
+                if "CarNo" in current_df.columns:
+                    # 全データからPit履歴を計算
+                    if os.path.exists(csv_path):
+                        try:
+                            all_data = pd.read_csv(csv_path, encoding="shift-jis")
+                            if not all_data.empty and "CarNo" in all_data.columns and "Pit" in all_data.columns and "Lap" in all_data.columns:
+                                # Pit列がPit（ピットイン）の行のみを抽出
+                                pit_data = all_data[all_data["Pit"] == "Pit"]
+                                
+                                # current_dfの各CarNoに対してPitIn情報とStint情報を設定
+                                for idx, row in current_df.iterrows():
+                                    car_no = row["CarNo"]
+                                    if car_no:
+                                        # 該当するCarNoのPit履歴を取得（Lap順でソート）
+                                        car_pit_data = pit_data[pit_data["CarNo"] == car_no].sort_values("Lap")
+                                        
+                                        # PitIn1, PitIn2, PitIn3に設定
+                                        pit_laps = car_pit_data["Lap"].tolist()
+                                        current_df.loc[idx, "PitIn1"] = str(pit_laps[0]) if len(pit_laps) >= 1 else ""
+                                        current_df.loc[idx, "PitIn2"] = str(pit_laps[1]) if len(pit_laps) >= 2 else ""
+                                        current_df.loc[idx, "PitIn3"] = str(pit_laps[2]) if len(pit_laps) >= 3 else ""
+                                        
+                                        # 該当するCarNoの全ラップタイムデータを取得
+                                        car_all_data = all_data[all_data["CarNo"] == car_no].copy()
+                                        car_all_data["LapTime"] = pd.to_numeric(car_all_data["LapTime"], errors="coerce")
+                                        car_all_data["Lap"] = pd.to_numeric(car_all_data["Lap"], errors="coerce")
+                                        car_all_data = car_all_data.dropna(subset=["LapTime", "Lap"])
+                                        
+                                        if not car_all_data.empty:
+                                            current_lap = int(row["Lap"]) if pd.notna(row["Lap"]) and row["Lap"] != "" else 0
+                                            
+                                            # Stint1の計算
+                                            if len(pit_laps) >= 1:
+                                                stint1_start = 1
+                                                stint1_end = int(pit_laps[0])
+                                                current_df.loc[idx, "Stint1"] = str(stint1_end - stint1_start + 1)
+                                            else:
+                                                stint1_start = 1
+                                                stint1_end = current_lap
+                                                current_df.loc[idx, "Stint1"] = str(stint1_end - stint1_start + 1) if current_lap > 0 else ""
+                                            
+                                            # Stint2の計算
+                                            if len(pit_laps) >= 2:
+                                                stint2_start = int(pit_laps[0]) + 1
+                                                stint2_end = int(pit_laps[1])
+                                                current_df.loc[idx, "Stint2"] = str(stint2_end - stint2_start + 1)
+                                            elif len(pit_laps) == 1:
+                                                stint2_start = int(pit_laps[0]) + 1
+                                                stint2_end = current_lap
+                                                current_df.loc[idx, "Stint2"] = str(stint2_end - stint2_start + 1) if current_lap > stint2_start else ""
+                                            else:
+                                                current_df.loc[idx, "Stint2"] = ""
+                                            
+                                            # Stint3の計算
+                                            if len(pit_laps) >= 3:
+                                                stint3_start = int(pit_laps[1]) + 1
+                                                stint3_end = int(pit_laps[2])
+                                                current_df.loc[idx, "Stint3"] = str(stint3_end - stint3_start + 1)
+                                            elif len(pit_laps) == 2:
+                                                stint3_start = int(pit_laps[1]) + 1
+                                                stint3_end = current_lap
+                                                current_df.loc[idx, "Stint3"] = str(stint3_end - stint3_start + 1) if current_lap > stint3_start else ""
+                                            else:
+                                                current_df.loc[idx, "Stint3"] = ""
+                                            
+                                            # 各Stintの平均タイム計算
+                                            def calculate_stint_average(start_lap, end_lap, car_data, multiplier):
+                                                stint_data = car_data[(car_data["Lap"] >= start_lap) & (car_data["Lap"] <= end_lap)]
+                                                if stint_data.empty:
+                                                    return ""
+                                                
+                                                # そのStintのベストタイムを取得
+                                                best_time = stint_data["LapTime"].min()
+                                                if pd.isna(best_time):
+                                                    return ""
+                                                
+                                                # ベストタイム × multiplierより小さいタイムのみでフィルタ
+                                                threshold = best_time * multiplier
+                                                filtered_data = stint_data[stint_data["LapTime"] <= threshold]
+                                                
+                                                if filtered_data.empty:
+                                                    return ""
+                                                
+                                                avg_time = filtered_data["LapTime"].mean()
+                                                return seconds_to_laptime(avg_time) if pd.notna(avg_time) else ""
+                                            
+                                            # Avg1の計算
+                                            if len(pit_laps) >= 1:
+                                                avg1 = calculate_stint_average(1, int(pit_laps[0]), car_all_data, average_multiplier)
+                                                current_df.loc[idx, "Avg1"] = avg1
+                                            else:
+                                                avg1 = calculate_stint_average(1, current_lap, car_all_data, average_multiplier)
+                                                current_df.loc[idx, "Avg1"] = avg1
+                                            
+                                            # Avg2の計算
+                                            if len(pit_laps) >= 2:
+                                                avg2 = calculate_stint_average(int(pit_laps[0]) + 1, int(pit_laps[1]), car_all_data, average_multiplier)
+                                                current_df.loc[idx, "Avg2"] = avg2
+                                            elif len(pit_laps) == 1:
+                                                avg2 = calculate_stint_average(int(pit_laps[0]) + 1, current_lap, car_all_data, average_multiplier)
+                                                current_df.loc[idx, "Avg2"] = avg2
+                                            else:
+                                                current_df.loc[idx, "Avg2"] = ""
+                                            
+                                            # Avg3の計算
+                                            if len(pit_laps) >= 3:
+                                                avg3 = calculate_stint_average(int(pit_laps[1]) + 1, int(pit_laps[2]), car_all_data, average_multiplier)
+                                                current_df.loc[idx, "Avg3"] = avg3
+                                            elif len(pit_laps) == 2:
+                                                avg3 = calculate_stint_average(int(pit_laps[1]) + 1, current_lap, car_all_data, average_multiplier)
+                                                current_df.loc[idx, "Avg3"] = avg3
+                                            else:
+                                                current_df.loc[idx, "Avg3"] = ""
+                                        else:
+                                            # データがない場合は空文字列
+                                            current_df.loc[idx, "Stint1"] = ""
+                                            current_df.loc[idx, "Avg1"] = ""
+                                            current_df.loc[idx, "Stint2"] = ""
+                                            current_df.loc[idx, "Avg2"] = ""
+                                            current_df.loc[idx, "Stint3"] = ""
+                                            current_df.loc[idx, "Avg3"] = ""
+                                    else:
+                                        current_df.loc[idx, "PitIn1"] = ""
+                                        current_df.loc[idx, "PitIn2"] = ""
+                                        current_df.loc[idx, "PitIn3"] = ""
+                                        current_df.loc[idx, "Stint1"] = ""
+                                        current_df.loc[idx, "Avg1"] = ""
+                                        current_df.loc[idx, "Stint2"] = ""
+                                        current_df.loc[idx, "Avg2"] = ""
+                                        current_df.loc[idx, "Stint3"] = ""
+                                        current_df.loc[idx, "Avg3"] = ""
+                        except (pd.errors.EmptyDataError, pd.errors.ParserError):
+                            # PitIn計算でエラーが発生した場合は空文字列で埋める
+                            for idx in current_df.index:
+                                current_df.loc[idx, "PitIn1"] = ""
+                                current_df.loc[idx, "PitIn2"] = ""
+                                current_df.loc[idx, "PitIn3"] = ""
+                                current_df.loc[idx, "Stint1"] = ""
+                                current_df.loc[idx, "Avg1"] = ""
+                                current_df.loc[idx, "Stint2"] = ""
+                                current_df.loc[idx, "Avg2"] = ""
+                                current_df.loc[idx, "Stint3"] = ""
+                                current_df.loc[idx, "Avg3"] = ""
+                
                 # Sec、Speed、Gap、DiffのNone値を空文字列に変換、列ごとに適切なフォーマットを適用
                 # Sec列：小数点以下3位、Speed列：小数点以下2位
                 sec_columns = ["Sec 1", "Sec 2", "Sec 3", "Sec 4"]
@@ -317,4 +484,7 @@ if livego_race:
 
     else:
         st.warning("CSVファイルが見つかりません。")
+
+
+# -------------------------- サイドバー設定 ----------------------------------------------------------------------------------
 
