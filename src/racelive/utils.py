@@ -81,29 +81,29 @@ class Datalist:
         # 参加ドライバーリストの空のデータベースを作成
         d_id = []
         for i in (self.car_no_list):
-            for s in range(1, int(self.racelap) + 1):
+            for s in range(0, int(self.racelap) + 1):
                 c_id = str(i) + str("_") + str(s)
                 d_id.append(c_id)
 
         category = []
         for n in (self.car_no_list):
-            for s in range(1, int(self.racelap) + 1):
+            for s in range(0, int(self.racelap) + 1):
                 category.append(self.list_cat)
 
         ses_name = []
         for n in (self.car_no_list):
-            for s in range(1, int(self.racelap) + 1):
+            for s in range(0, int(self.racelap) + 1):
                 ses_name.append(self.sess)
 
         c_no = []
         for i in (self.car_no_list):
-            for s in range(1, int(self.racelap) + 1):
+            for s in range(0, int(self.racelap) + 1):
                 cno = i
                 c_no.append(cno)
 
         dr1 = []
         for i, driver in zip(self.car_no_list, self.name3_list):
-            for _ in range(1, int(self.racelap) + 1):
+            for _ in range(0, int(self.racelap) + 1):
                 if len(str(i)) == 1:
                     d_name = f"#  {i} {driver}"
                 else:
@@ -112,17 +112,17 @@ class Datalist:
 
         dr2 = []
         for driver in self.name1_list:
-            for _ in range(1, int(self.racelap) + 1):
+            for _ in range(0, int(self.racelap) + 1):
                 dr2.append(driver)
 
         mk = []
         for maker in self.maker_list:
-            for _ in range(1, int(self.racelap) + 1):
+            for _ in range(0, int(self.racelap) + 1):
                 mk.append(maker)
 
         lap = []
         for n in (self.car_no_list):
-            for s in range(1, int(self.racelap) + 1):
+            for s in range(0, int(self.racelap) + 1):
                 lap.append(s)
 
         df_list = {"ID": d_id, "Category": category, "Session": ses_name, "CarNo": c_no, "Driver": dr1, "Driver Name": dr2, "Maker": mk, "Lap": lap}
@@ -136,12 +136,14 @@ class Datalist:
         df0["Speed"] = None
         df0["LapTime (min)"] = None
         df0["LapTime"] = None
+        df0["Gap"] = None
+        df0["Diff"] = None
         df0["E Time"] = ""
         df0["Tyre"] = ""
         df0["Pit"] = ""
         df0["Pit In No"] = ""
         df0["Track Condition"] = ""
-        df0["Wwather"] = ""
+        df0["Weather"] = ""
         df0["Flag"] = ""
         df0["Remaining Time"] = ""
         df0["Sampling Time"] = ""

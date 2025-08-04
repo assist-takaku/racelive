@@ -1,6 +1,6 @@
 {
-  "scraping": false,
-  "timestamp": "2025-08-03T07:50:56.748373",
-  "message": "CSVファイルが未アップロード",
+  "scraping": true,
+  "timestamp": "2025-08-04T16:07:27.172572",
+  "message": "SF RePlay処理開始",
   "command_from": "main.py"
 }

@@ -50,7 +50,7 @@ class Racelivescraper:
         columns1 = [
             "ID", "Category", "Session", "CarNo", "Driver", "Maker", "Lap", "Pos", 
             "Sec 1", "Sec 2", "Sec 3", "Sec 4", "Speed", "LapTime (min)", "LapTime", "Gap", "Diff",
-            "Elapsed Time", "Tire", "Pit", "Pit In No", "Track Condition","Weather", "Flag", "Remaining Time", 
+            "Elapsed Time", "Tyre", "Pit", "Pit In No", "Track Condition","Weather", "Flag", "Remaining Time", 
             "Sampling Time", "Ambient Time", "Ambient Temp", "Ambient K Type",
             "Ambient Track", "Ambient Humidity", "Ambient Pressure",
             "Weather Time", "Weather Temp", "Weather Humidity",
@@ -222,7 +222,7 @@ class Racelivescraper:
 
                                 # Pit In 回数 取得
                                 try:
-                                    ptn = ""
+                                    ptn = self.driver.find_element(By.ID, c_no + "_pit").text
                                 except Exception:
                                     ptn = ""
 
@@ -241,9 +241,9 @@ class Racelivescraper:
 
                                 # タイヤ画像ファイル名からスペックを取得
                                 try:
-                                    tire = ""
+                                    tyre = ""
                                 except Exception:
-                                    tire = ""
+                                    tyre = ""
 
                                 # データベース用ID作成
                                 id_no = str(i) + "_" + str(lap)
@@ -251,8 +251,27 @@ class Racelivescraper:
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pos"] = pos
                                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
                                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
-                                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
-                                self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tyre
+                                
+                                # Pitデータの特別処理：既存データがある場合は新しいデータが空でも保持
+                                mask = self.df0["ID"] == id_no
+                                if mask.any():
+                                    existing_pit = self.df0.loc[mask, "Pit"].iloc[0]
+                                    # 既存のPitデータがあり、新しいデータが空または空文字列の場合は既存データを保持
+                                    # existing_pitがNaNやfloatの場合を考慮してstr()で変換してからstrip()
+                                    existing_pit_str = str(existing_pit) if existing_pit is not None else ""
+                                    new_pit_str = str(pit) if pit is not None else ""
+                                    
+                                    if existing_pit_str and existing_pit_str.strip() and existing_pit_str != "nan" and (not new_pit_str or not new_pit_str.strip() or new_pit_str == "nan"):
+                                        # 既存のPitデータを保持（更新しない）
+                                        pass
+                                    else:
+                                        # 新しいPitデータがある場合、または既存データがない場合は更新
+                                        self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                                else:
+                                    # IDが存在しない場合は通常通り設定
+                                    self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                                
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
 
                                 if self.sector == 4:
@@ -334,7 +353,7 @@ class Racelivescraper:
                                 listdata1.append(gap)
                                 listdata1.append(diff)
                                 listdata1.append(etime)
-                                listdata1.append(tire)
+                                listdata1.append(tyre)
                                 listdata1.append(pit)
                                 listdata1.append(ptn)
                                 listdata1.append(trackcondi)
@@ -539,9 +558,9 @@ class Racelivescraper:
 
                                 # タイヤ画像ファイル名からスペックを取得
                                 try:
-                                    tire = ""
+                                    tyre = ""
                                 except Exception:
-                                    tire = ""
+                                    tyre = ""
 
                                 # データベース用ID作成
                                 id_no = str(i) + "_" + str(lap)
@@ -549,7 +568,7 @@ class Racelivescraper:
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pos"] = pos
                                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
                                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
-                                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
+                                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tyre
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
 
@@ -630,7 +649,7 @@ class Racelivescraper:
                                 listdata1.append(gap)
                                 listdata1.append(diff)
                                 listdata1.append(etime)
-                                listdata1.append(tire)
+                                listdata1.append(tyre)
                                 listdata1.append(pit)
                                 listdata1.append(ptn)
                                 listdata1.append(trackcondi)
@@ -819,7 +838,7 @@ class Racelivescraper:
                                 etime = ""
 
                                 # タイヤ画像ファイル名からスペックを取得
-                                tire = ""
+                                tyre = ""
 
                                 # トラック・コンディションの取得
                                 trackcondi = "---"
@@ -839,7 +858,7 @@ class Racelivescraper:
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pos"] = pos
                                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
                                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
-                                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
+                                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tyre
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
                                 self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
 
@@ -930,7 +949,7 @@ class Racelivescraper:
                                 listdata1.append("")  # gap（STでは提供されていない）
                                 listdata1.append("")  # diff（STでは提供されていない）
                                 listdata1.append(etime)
-                                listdata1.append(tire)
+                                listdata1.append(tyre)
                                 listdata1.append(pit)
                                 listdata1.append(ptn)
                                 listdata1.append(trackcondi)
@@ -1953,7 +1972,7 @@ class livetime_replay:
                 current_sampling_time = row_data['Sampling Time']
                 
                 id_no = row_data.get("ID")
-                pos = row_data.get("Pos")  # "Position"ではなく"Pos"
+                pos = row_data.get("Pos")
                 sec1 = row_data.get("Sec 1")
                 sec2 = row_data.get("Sec 2")
                 sec3 = row_data.get("Sec 3")
@@ -1961,7 +1980,7 @@ class livetime_replay:
                 speed = row_data.get("Speed")
                 laptime = row_data.get("LapTime (min)")
                 laptime_sec = row_data.get("LapTime")
-                tire = row_data.get("Tire")  # "Tyre"ではなく"Tire"
+                tyre = row_data.get("Tyre")
                 pit = row_data.get("Pit")
                 ptn = row_data.get("Pit In No")
                 trackcondi = row_data.get("Track Condition")
@@ -1978,8 +1997,27 @@ class livetime_replay:
                 self.df0.loc[(self.df0["ID"] == id_no), "Speed"] = speed
                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime (min)"] = laptime
                 self.df0.loc[(self.df0["ID"] == id_no), "LapTime"] = laptime_sec
-                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tire
-                self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                self.df0.loc[(self.df0["ID"] == id_no), "Tyre"] = tyre
+                
+                # Pitデータの特別処理：既存データがある場合は新しいデータが空でも保持
+                mask = self.df0["ID"] == id_no
+                if mask.any():
+                    existing_pit = self.df0.loc[mask, "Pit"].iloc[0]
+                    # 既存のPitデータがあり、新しいデータが空または空文字列の場合は既存データを保持
+                    # existing_pitがNaNやfloatの場合を考慮してstr()で変換してからstrip()
+                    existing_pit_str = str(existing_pit) if existing_pit is not None else ""
+                    new_pit_str = str(pit) if pit is not None else ""
+                    
+                    if existing_pit_str and existing_pit_str.strip() and existing_pit_str != "nan" and (not new_pit_str or not new_pit_str.strip() or new_pit_str == "nan"):
+                        # 既存のPitデータを保持（更新しない）
+                        pass
+                    else:
+                        # 新しいPitデータがある場合、または既存データがない場合は更新
+                        self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                else:
+                    # IDが存在しない場合は通常通り設定
+                    self.df0.loc[(self.df0["ID"] == id_no), "Pit"] = pit
+                
                 self.df0.loc[(self.df0["ID"] == id_no), "Pit In No"] = ptn
                 self.df0.loc[(self.df0["ID"] == id_no), "Track Condition"] = trackcondi
                 self.df0.loc[(self.df0["ID"] == id_no), "Weather"] = weather_name
