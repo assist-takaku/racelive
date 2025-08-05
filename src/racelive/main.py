@@ -165,7 +165,7 @@ with setup:
                         st.rerun()
                 else:
                     uploaded_file = st.file_uploader(
-                        label="",  # ラベルを空にする
+                        label="CSVファイルをアップロード",  # 適切なラベルを設定
                         type="csv",
                         label_visibility="collapsed"  # ラベルとスペースを非表示
                     )

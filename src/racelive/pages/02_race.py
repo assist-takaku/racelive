@@ -58,6 +58,11 @@ session_name = selected_session["Name"]
 df0 = datal.data_db(race_lap, session_name)
 driver_list, car_no_list = datal.driverlist()
 
+# サーキット・インフォメーションを取得
+pitloss = sf_setfile["Circuit"][sf_setfile["Last Circuit"]]["Pit Loss"]
+tyrechange = sf_setfile["Tyre Change"]
+
+
 weather_Path = sf_setfile["weather Path"]
 ambientid = sf_setfile["ambient ID"]
 ambientreadKey = sf_setfile["ambient readKey"]
@@ -199,7 +204,51 @@ with col_race1:
     with st.container(border=True):
         st.write("LossTime")
         with st.container(border=True):
-            st.write("")
+            # Pit Loss Time
+            col_pit1, col_pit2 = st.columns([3, 1])
+            with col_pit1:
+                ptilosstime = st.text_input("Pit Loss:", label_visibility="collapsed", value=pitloss, key="ptilosstime")
+            with col_pit2:
+                # st.write("sec")
+                st.markdown("<div style='padding-top: 0.4rem;'>sec</div>", unsafe_allow_html=True)
+            
+            # Tyre Change Time
+            col_tyre1, col_tyre2 = st.columns([3, 1])
+            with col_tyre1:
+                Tyrechangetime = st.text_input("Tyre Change:", label_visibility="collapsed", value=tyrechange, key="tyrechangetime")
+            with col_tyre2:
+                # st.write("sec")
+                st.markdown("<div style='padding-top: 0.4rem;'>sec</div>", unsafe_allow_html=True)
+            
+            totallosstime = int(ptilosstime) + int(Tyrechangetime)
+            
+            # Total Loss Timeの表示
+            st.markdown("---")
+            
+            # st.markdown(
+            #     """
+            #     <style>
+            #     div[data-testid="metric-container"] > div > div[data-testid="metric-value"] > div {
+            #         font-size: 0.8rem !important;
+            #         font-weight: 600 !important;
+            #     }
+            #     div[data-testid="metric-container"] [data-testid="metric-value"] {
+            #         font-size: 0.8rem !important;
+            #     }
+            #     [data-testid="metric-value"] {
+            #         font-size: 0.8rem !important;
+            #     }
+            #     </style>
+            #     """, 
+            #     unsafe_allow_html=True
+            # )
+            
+            st.metric(
+                label="Total Loss Time", 
+                value=f"{totallosstime} sec",
+                delta=None
+            )
+
 
 with col_race2:
     with st.container(border=True):
@@ -211,7 +260,10 @@ with col_race3:
     with st.container(border=True):
         st.write("My Car")
         with st.container(border=True):
-            st.write("")
+            st.write("Driver")
+            selected_driver_race0 = st.selectbox("ドライバー選択", driver_list, index=20, key="selected_driver_race0", label_visibility="collapsed")
+
+
 
 with col_race4:
     with st.container(border=True):
@@ -222,16 +274,21 @@ with col_race4:
 with col_race5:
     with st.container(border=True): 
         st.write("Target Car")
-        col_race6, col_race7, col_race8 = st.columns([1, 1, 1])
-        with col_race6:
+        col_race5_s1, col_race5_s2, col_race5_s3 = st.columns([1, 1, 1])
+        with col_race5_s1:
             with st.container(border=True):
-                st.write("D1")
-        with col_race7:
+                st.write("Driver")
+                selected_driver_race1 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver_race1", label_visibility="collapsed")
+
+        with col_race5_s2:
             with st.container(border=True):
-                st.write("D2")
-        with col_race8:
+                st.write("Driver")
+                selected_driver_race2 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver_race2", label_visibility="collapsed")
+
+        with col_race5_s3:
             with st.container(border=True):
-                st.write("D3")
+                st.write("Driver")
+                selected_driver_race3 = st.selectbox("ドライバー選択", driver_list, index=0, key="selected_driver_race3", label_visibility="collapsed")
 
 
 # -------------------------- CSVファイルの自動リフレッシュ -----------------------------------------------------

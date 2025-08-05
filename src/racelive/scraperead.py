@@ -681,13 +681,18 @@ class Racelivescraper:
                             except Exception:
                                 pass
 
-                    # Super GT メソッド
+                    # Super Formula Replay メソッド
                     elif self.cat == 2:
+                        # def racelive_sfreplay(self, racelap, car_max, start_time, finish_time):
+                        return {"data": "Super Formula Data"}
+
+                    # Super GT メソッド
+                    elif self.cat == 3:
                         # def racelive_sfreplay(self, racelap, car_max, start_time, finish_time):
                         return {"data": "Super GT Data"}
 
                     # スーパー耐久 スクレイピング
-                    elif self.cat == 3:
+                    elif self.cat == 4:
 
                         # ST スクレイピング
                         for index, car_no in enumerate(self.car_no_list, start=1):
@@ -981,10 +986,6 @@ class Racelivescraper:
                             except Exception:
                                 pass
 
-                    # Super Formula Replay メソッド
-                    elif self.cat == 4:
-                        # def racelive_sfreplay(self, racelap, car_max, start_time, finish_time):
-                        return {"data": "Super Formula Data"}
 
                 time.sleep(0.2)
 
