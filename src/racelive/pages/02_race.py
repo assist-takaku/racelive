@@ -99,10 +99,6 @@ def format_speed(value):
     return f"{value:.2f}"
 
 
-# -------------------------- サイドバー設定 ----------------------------------------------------------------------------------
-st.sidebar.markdown("## タイムデータ表示")
-
-
 # -------------------------- 空データフレーム事前設定 --------------------------------------------------------------------------
 
 # レース Columns1設定
@@ -142,19 +138,23 @@ if "display_race_df0" not in st.session_state:
     st.session_state.display_race_df0 = race_df0.copy()
 
 
-
-# -------------------------- ライブタイムデータ表示エリア ----------------------------------------------------------------------
+# -------------------------- サイドバー設定 ----------------------------------------------------------------------------------
+st.sidebar.markdown("## タイムデータ表示")
 
 # スクレイピング開始・停止をトグルで管理
 livego_race = st.sidebar.toggle("タイム表示/停止", key="livego_race")
+st.sidebar.write("")
+st.sidebar.write("----------")
 
 # Averageの倍率を取得
-average_multiplier = st.sidebar.number_input("Average", min_value=1.00, max_value=1.50, value=1.05, step=0.01)
+average_multiplier = st.sidebar.number_input("Stint Average", min_value=1.00, max_value=1.50, value=1.05, step=0.01)
 
 # データフレーム表示の展開/折りたたみ設定
+st.sidebar.write("")
 expanded = st.sidebar.checkbox("データフレーム全画面表示", value=False)
-dataframe_height = 810 if expanded else 405
+dataframe_height = 810 if expanded else 460
 
+# -------------------------- レース・ライブタイムデータ表示エリア --------------------------------------------------------------
 with st.container(border=True):
     # 統合されたデータフレーム用の列設定
     column_config = {
@@ -192,6 +192,46 @@ with st.container(border=True):
         column_config=column_config,
         height=dataframe_height 
     )
+
+# -------------------------- レース・アナリシス表示エリア ----------------------------------------------------------------------
+col_race1, col_race2, col_race3, col_race4, col_race5 = st.columns([1, 2, 2, 2, 4])
+with col_race1:
+    with st.container(border=True):
+        st.write("LossTime")
+        with st.container(border=True):
+            st.write("")
+
+with col_race2:
+    with st.container(border=True):
+        st.write("Previous Car")    
+        with st.container(border=True):
+            st.write("")
+
+with col_race3:
+    with st.container(border=True):
+        st.write("My Car")
+        with st.container(border=True):
+            st.write("")
+
+with col_race4:
+    with st.container(border=True):
+        st.write("Behind Car")
+        with st.container(border=True):
+            st.write("")
+
+with col_race5:
+    with st.container(border=True): 
+        st.write("Target Car")
+        col_race6, col_race7, col_race8 = st.columns([1, 1, 1])
+        with col_race6:
+            with st.container(border=True):
+                st.write("D1")
+        with col_race7:
+            with st.container(border=True):
+                st.write("D2")
+        with col_race8:
+            with st.container(border=True):
+                st.write("D3")
 
 
 # -------------------------- CSVファイルの自動リフレッシュ -----------------------------------------------------
