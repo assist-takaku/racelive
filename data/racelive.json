@@ -4,10 +4,10 @@
     "Last Circuit": 1,
     "Last Event": "2025 Round 8",
     "Last Session": 0,
-    "Last StartTime": "9:00",
-    "Last EndTime": "10:30",
+    "Last StartTime": "17:46",
+    "Last EndTime": "17:47",
     "Race Lap": "50",
-    "Time Path": "/Users/koichi-book/Documents/RaceLive Data/LapTime/2025/Rd6&7",
+    "Time Path": "/Users/koichi-book/Documents/RaceLive Data/LapTime/2025/Rd8",
     "ambient ID": "51094",
     "ambient readKey": "35059f455d307f2d",
     "weather Path": "/Users/koichi-book/Documents/RaceLive Data/Weather/download.txt",
@@ -740,9 +740,9 @@
     "Session": [
         {
             "Name": "FP1",
-            "Date": "8/9",
-            "StartTime": "9:00",
-            "EndTime": "10:30",
+            "Date": "8/5",
+            "StartTime": "17:46",
+            "EndTime": "17:47",
             "Lap": "50"
         },
         {

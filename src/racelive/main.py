@@ -584,6 +584,7 @@ with st.sidebar:
     def is_livego_running():
         """livego.pyが実行中かチェック"""
         try:
+            # Streamlit Community Cloudでのプロセスチェックは制限される可能性がある
             for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                 try:
                     cmdline = proc.info['cmdline']
@@ -592,7 +593,10 @@ with st.sidebar:
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
             return False, None
-        except Exception:
+        except Exception as ps_error:
+            # プロセス取得エラーをユーザーに表示
+            st.warning(f"⚠️ プロセス状態取得エラー: {ps_error}")
+            st.info("📝 Streamlit Community Cloudではプロセス情報の取得が制限される場合があります")
             return False, None
     
     # 実際のプロセス状態を確認
@@ -606,11 +610,14 @@ with st.sidebar:
             file_status = control_data.get("scraping", False)
             status_message = control_data.get("message", "")
             last_update = control_data.get("timestamp", "")
-        except:
+        except Exception as read_error:
+            st.warning(f"⚠️ 制御ファイル読み込みエラー: {read_error}")
+            st.info(f"📝 ファイルパス: {control_file}")
             file_status = False
             status_message = ""
             last_update = ""
     else:
+        st.info(f"📄 制御ファイルが存在しません: {control_file}")
         file_status = False
         status_message = ""
         last_update = ""
@@ -708,10 +715,18 @@ with st.sidebar:
     # 状態が変更された場合にファイルに保存
     if is_sf_replay_mode:
         # SF RePlayモードの処理
-        # # デバッグ情報（問題解決のため一時的に表示）
-        # st.write(f"Debug: scraping_status={scraping_status}, previous_toggle_state={previous_toggle_state}")
-        # st.write(f"Debug: replay_running={st.session_state.get('replay_running', False)}, replay_completed={st.session_state.get('replay_completed', False)}")
-        # st.write(f"Debug: uploaded_file_data exists={st.session_state.get('uploaded_file_data') is not None}")
+        # デバッグ情報を表示
+        with st.expander("🔍 デバッグ情報", expanded=False):
+            st.write(f"**スクレイピング状態**: {scraping_status}")
+            st.write(f"**前回のトグル状態**: {previous_toggle_state}")
+            st.write(f"**リプレイ実行中**: {st.session_state.get('replay_running', False)}")
+            st.write(f"**リプレイ完了**: {st.session_state.get('replay_completed', False)}")
+            st.write(f"**アップロードファイル存在**: {st.session_state.get('uploaded_file_data') is not None}")
+            st.write(f"**カテゴリ名**: {st.session_state.get('category_name')}")
+            if os.path.exists(control_file):
+                with open(control_file, "r", encoding="utf-8") as f:
+                    debug_control_data = json.load(f)
+                st.json(debug_control_data)
         
         # トグル状態が変化した場合のみ処理実行（ファイルアップロード時の自動実行を防ぐ）
         if scraping_status and not previous_toggle_state and not st.session_state.get("replay_running", False) and not st.session_state.get("replay_completed", False):
@@ -734,7 +749,14 @@ with st.sidebar:
                     with open(control_file, "w", encoding="utf-8") as f:
                         json.dump(control_data, f, ensure_ascii=False, indent=2)
                     
-                    from racelive.scraperead import livetime_replay
+                    # インポートのエラーハンドリング
+                    try:
+                        from racelive.scraperead import livetime_replay
+                        st.info("📦 livetime_replayモジュールのインポート成功")
+                    except ImportError as import_error:
+                        st.error(f"❌ インポートエラー: {import_error}")
+                        st.exception(import_error)
+                        raise
                     
                     # リプレイ処理用のパラメータを取得
                     selected_category_index = category_list.index(st.session_state.get("category_name", category_list[0]))
@@ -742,19 +764,33 @@ with st.sidebar:
                     teamlist, mk, mk2 = datal.teamlist()
                     driver_list, car_no_list = datal.driverlist()
                     
+                    st.info(f"📊 パラメータ設定完了 - カテゴリ: {selected_category_index}, セクター: {sector}, 車両数: {len(car_no_list)}")
+                    
                     # リプレイ処理を実行
-                    replay_processor = livetime_replay(
-                        data=uploaded_file_data,
-                        df0=datal.data_db(race_lap, "SF RePlay"),
-                        cat=selected_category_index,
-                        sector=sector,
-                        car_no_list=car_no_list,
-                        driver_list=driver_list,
-                        mk=mk,
-                    )
+                    try:
+                        replay_processor = livetime_replay(
+                            data=uploaded_file_data,
+                            df0=datal.data_db(race_lap, "SF RePlay"),
+                            cat=selected_category_index,
+                            sector=sector,
+                            car_no_list=car_no_list,
+                            driver_list=driver_list,
+                            mk=mk,
+                        )
+                        st.info("🔧 リプレイプロセッサ作成成功")
+                    except Exception as processor_error:
+                        st.error(f"❌ リプレイプロセッサ作成エラー: {processor_error}")
+                        st.exception(processor_error)
+                        raise
                     
                     # SF RePlayの処理を実行
-                    replay_processor.sf()
+                    try:
+                        replay_processor.sf()
+                        st.info("⚙️ SF RePlay処理実行完了")
+                    except Exception as sf_error:
+                        st.error(f"❌ SF RePlay処理実行エラー: {sf_error}")
+                        st.exception(sf_error)
+                        raise
                     
                     st.session_state["replay_running"] = False
                     st.session_state["replay_completed"] = True
@@ -770,11 +806,22 @@ with st.sidebar:
                     
                 except Exception as e:
                     st.session_state["replay_running"] = False
-                    st.error(f"❌ SF RePlay処理エラー: {e}")
+                    st.error(f"❌ SF RePlay処理エラー: {str(e)}")
+                    st.error(f"🔍 エラータイプ: {type(e).__name__}")
+                    st.exception(e)
+                    
+                    # エラーの詳細情報を表示
+                    import traceback
+                    error_details = traceback.format_exc()
+                    with st.expander("📋 詳細エラー情報", expanded=False):
+                        st.code(error_details, language="python")
+                    
                     control_data = {
                         "scraping": False,
                         "timestamp": datetime.now().isoformat(),
                         "message": f"SF RePlayエラー: {str(e)}",
+                        "error_type": type(e).__name__,
+                        "error_details": error_details,
                         "command_from": "main.py"
                     }
             else:
@@ -804,25 +851,82 @@ with st.sidebar:
             control_data = None
     elif scraping_status != previous_toggle_state:
         # 通常のスクレイピング制御
-        control_data = {
-            "scraping": scraping_status,
-            "timestamp": datetime.now().isoformat(),
-            "command_from": "main.py"
-        }
+        try:
+            control_data = {
+                "scraping": scraping_status,
+                "timestamp": datetime.now().isoformat(),
+                "command_from": "main.py"
+            }
+            
+            # スクレイピング開始時の追加チェック
+            if scraping_status:
+                st.info("🔍 スクレイピング開始前チェック...")
+                
+                # 必要なモジュールの確認
+                try:
+                    from selenium import webdriver
+                    from selenium.webdriver.chrome.options import Options
+                    st.info("✅ Seleniumモジュール確認OK")
+                except ImportError as selenium_error:
+                    st.error(f"❌ Seleniumインポートエラー: {selenium_error}")
+                    st.exception(selenium_error)
+                    
+                # 制御ファイルのパス確認
+                if not os.path.exists(os.path.dirname(control_file)):
+                    st.warning(f"⚠️ 制御ファイルディレクトリが存在しません: {os.path.dirname(control_file)}")
+                    try:
+                        os.makedirs(os.path.dirname(control_file), exist_ok=True)
+                        st.info("📁 制御ファイルディレクトリを作成しました")
+                    except Exception as dir_error:
+                        st.error(f"❌ ディレクトリ作成エラー: {dir_error}")
+                        st.exception(dir_error)
+                
+                # カテゴリURLの確認
+                category_url = st.session_state.get("categoryurl", "")
+                if not category_url:
+                    st.warning("⚠️ カテゴリURLが設定されていません")
+                else:
+                    st.info(f"🔗 スクレイピング対象URL: {category_url}")
+                
+                st.info("🚀 スクレイピング開始指示を送信中...")
+            else:
+                st.info("⏹️ スクレイピング停止指示を送信中...")
+                
+        except Exception as control_error:
+            st.error(f"❌ スクレイピング制御エラー: {control_error}")
+            st.exception(control_error)
+            
+            # エラー情報を含む制御データ
+            control_data = {
+                "scraping": False,
+                "timestamp": datetime.now().isoformat(),
+                "command_from": "main.py",
+                "error": str(control_error),
+                "error_type": type(control_error).__name__
+            }
     else:
         control_data = None
         
     # 制御ファイルの更新
     if control_data is not None:
-        os.makedirs(os.path.dirname(control_file), exist_ok=True)
-        with open(control_file, "w", encoding="utf-8") as f:
-            json.dump(control_data, f, ensure_ascii=False, indent=2)
-        
-        if not is_sf_replay_mode:
-            if scraping_status:
-                st.success("✅ スクレイピング開始指示を送信")
-            else:
-                st.info("⏹️ スクレイピング停止指示を送信")
+        try:
+            os.makedirs(os.path.dirname(control_file), exist_ok=True)
+            with open(control_file, "w", encoding="utf-8") as f:
+                json.dump(control_data, f, ensure_ascii=False, indent=2)
+            
+            st.info(f"📝 制御ファイル更新成功: {control_file}")
+            
+            if not is_sf_replay_mode:
+                if scraping_status:
+                    st.success("✅ スクレイピング開始指示を送信")
+                else:
+                    st.info("⏹️ スクレイピング停止指示を送信")
+        except Exception as file_error:
+            st.error(f"❌ 制御ファイル更新エラー: {file_error}")
+            st.exception(file_error)
+            st.error(f"🔍 ファイルパス: {control_file}")
+            st.error(f"🔍 ディレクトリ存在: {os.path.exists(os.path.dirname(control_file))}")
+            st.error(f"🔍 書き込み権限確認が必要です")
     
     # livego.pyからの状態変更を検知してトグルを同期
     if os.path.exists(control_file):
@@ -885,6 +989,49 @@ with st.sidebar:
             json.dump(current_sf_setfile, f, ensure_ascii=False, indent=4)
 
 
+    st.markdown("---")
+    st.markdown("### 環境情報")
+    
+    with st.expander("🔧 システム情報", expanded=False):
+        try:
+            import platform
+            import sys
+            st.write(f"**Python版**: {sys.version}")
+            st.write(f"**プラットフォーム**: {platform.platform()}")
+            st.write(f"**アーキテクチャ**: {platform.architecture()}")
+            st.write(f"**現在の作業ディレクトリ**: {os.getcwd()}")
+            st.write(f"**Python実行パス**: {sys.executable}")
+            
+            # ファイルシステム情報
+            data_dir = "./data"
+            st.write(f"**dataディレクトリ存在**: {os.path.exists(data_dir)}")
+            if os.path.exists(data_dir):
+                try:
+                    files_in_data = os.listdir(data_dir)
+                    st.write(f"**dataディレクトリ内容**: {files_in_data}")
+                except Exception as list_error:
+                    st.write(f"**dataディレクトリ読み込みエラー**: {list_error}")
+            
+            # 制御ファイル情報
+            st.write(f"**制御ファイルパス**: {control_file}")
+            st.write(f"**制御ファイル存在**: {os.path.exists(control_file)}")
+            
+            # モジュール情報
+            try:
+                import selenium
+                st.write(f"**Selenium版**: {selenium.__version__}")
+            except ImportError:
+                st.write("**Selenium**: 未インストール")
+            
+            try:
+                import psutil
+                st.write(f"**psutil版**: {psutil.__version__}")
+            except ImportError:
+                st.write("**psutil**: 未インストール")
+                
+        except Exception as env_error:
+            st.error(f"環境情報取得エラー: {env_error}")
+    
     st.markdown("---")
     st.markdown("### プロセス制御")
     
